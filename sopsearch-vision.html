@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0d15">
+<title>Meridian</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & BASE ───────────────────────────────────────────────── */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  /* Deep navy backgrounds */
+  --bg:#0a0d15;--surface:#05172f;--surface2:#182A3A;--surface3:#2d3c4c;
+  /* Slate borders */
+  --border:#2d3c4c;--border2:#364049;
+  /* Warm gold accent */
+  --accent:#C2A072;--accent2:#D6BB80;--accent3:#A08348;
+  /* Semantic */
+  --warn:#c87c50;--ok:#7aab6e;
+  /* Text */
+  --text:#e8dfc8;--muted:#787C83;--gold:#C2A072;
+  --radius:12px;--safe-bottom:env(safe-area-inset-bottom,16px);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:14px;
+  overflow-x:hidden;-webkit-font-smoothing:antialiased}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── HEADER ─────────────────────────────────────────────────────── */
+.hdr{
+  position:sticky;top:0;z-index:100;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:14px 20px;padding-top:calc(14px + env(safe-area-inset-top,0px));
+  display:flex;align-items:center;justify-content:space-between;
+}
+.logo{font-family:'Playfair Display',serif;font-weight:800;font-size:18px;
+  display:flex;align-items:center;gap:10px;letter-spacing:.12em;white-space:nowrap}
+.logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--accent3),var(--accent2));border-radius:10px;
+  display:grid;place-items:center;font-size:16px;box-shadow:0 2px 16px rgba(160,131,72,.45)}
+.logo em{color:var(--text);font-style:normal;letter-spacing:-.01em}
+.hdr-pill{font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+  padding:5px 11px;border:1px solid var(--accent);color:var(--accent);border-radius:20px}
+
+/* ── SCROLL BODY ─────────────────────────────────────────────────── */
+.body{overflow-y:auto;padding-bottom:calc(100px + var(--safe-bottom))}
+
+/* ── API KEY SCREEN ──────────────────────────────────────────────── */
+#apiScreen{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:32px 24px;
+}
+.api-card{
+  width:100%;max-width:440px;background:var(--surface);
+  border:1px solid var(--border2);border-radius:var(--radius);
+  padding:32px 24px;
+}
+.api-card h2{font-family:'Playfair Display',serif;font-size:22px;font-weight:800;
+  margin-bottom:8px;line-height:1.2}
+.api-card p{font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:24px}
+.api-card a{color:var(--accent);text-decoration:none}
+.field-label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px;display:block}
+.api-input{
+  width:100%;background:var(--surface2);border:2px solid var(--border2);
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;
+  padding:14px 16px;border-radius:10px;outline:none;
+  transition:border-color .2s;letter-spacing:.05em;
+}
+.api-input:focus{border-color:var(--accent)}
+.api-input::placeholder{color:var(--muted)}
+.api-error{font-size:11px;color:var(--warn);margin-top:8px;display:none}
+.btn-big{
+  width:100%;margin-top:16px;padding:16px;
+  background:var(--accent);color:var(--bg);border:none;border-radius:10px;
+  font-family:'Playfair Display',serif;font-size:16px;font-weight:700;
+  cursor:pointer;transition:opacity .15s;letter-spacing:.01em;
+}
+.btn-big:active{opacity:.8}
+
+/* ── MAIN APP ────────────────────────────────────────────────────── */
+#appScreen{display:none}
+
+/* ── CAPTURE SECTION ─────────────────────────────────────────────── */
+.capture-zone{
+  margin:16px;border-radius:var(--radius);overflow:hidden;
+  background:var(--surface);border:2px dashed var(--border2);
+  min-height:260px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  cursor:pointer;transition:border-color .2s;position:relative;
+}
+.capture-zone.drag-over{border-color:var(--accent);border-style:solid;background:rgba(194,160,114,.04)}
+.capture-zone.has-image{border-style:solid;border-color:transparent;min-height:unset}
+.capture-zone img{width:100%;max-height:420px;object-fit:cover;display:block}
+.capture-idle{text-align:center;padding:32px 24px;pointer-events:none}
+.capture-idle .ci-icon{font-size:52px;margin-bottom:12px;display:block}
+.capture-idle h3{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:8px;color:var(--accent2)}
+.capture-idle p{font-size:12px;color:var(--muted);line-height:1.7}
+.capture-zone.has-image .capture-idle{display:none}
+.img-info{
+  display:none;padding:10px 16px;background:rgba(8,12,16,.85);
+  position:absolute;bottom:0;left:0;right:0;
+  font-size:11px;color:rgba(255,255,255,.6);
+  justify-content:space-between;align-items:center;
+  backdrop-filter:blur(8px);
+}
+.capture-zone.has-image .img-info{display:flex}
+video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
+
+/* ── ACTION BUTTONS ──────────────────────────────────────────────── */
+.action-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:10px;padding:0 16px 12px;
+}
+.action-grid.three{grid-template-columns:1fr 1fr 1fr}
+.ab{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:16px 12px;border:none;border-radius:var(--radius);
+  font-family:'Playfair Display',serif;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .15s;min-height:70px;
+}
+.ab:active{transform:scale(.96)}
+.ab .ab-icon{font-size:24px}
+.ab-camera{background:var(--surface2);color:var(--accent2);border:1px solid rgba(194,160,114,.3)}
+.ab-upload{background:var(--surface2);color:var(--text);border:1px solid var(--border2)}
+.ab-clear{background:var(--surface2);color:var(--muted);border:1px solid var(--border2);display:none}
+.ab-analyze{
+  grid-column:1/-1;background:var(--accent);color:var(--bg);
+  flex-direction:row;gap:10px;font-size:16px;min-height:60px;
+}
+.ab-analyze:disabled{opacity:.35;cursor:not-allowed}
+.ab-analyze:not(:disabled):active{background:var(--accent3);transform:scale(.97)}
+
+/* ── PROGRESS ────────────────────────────────────────────────────── */
+.progress-card{
+  display:none;margin:0 16px 12px;padding:20px;
+  background:var(--surface);border-radius:var(--radius);
+  border:1px solid var(--border2);text-align:center;
+}
+.progress-card.active{display:block}
+.prog-label{font-family:'Playfair Display',serif;font-size:15px;color:var(--accent);margin-bottom:14px}
+.prog-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:10px}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent3),var(--accent2));width:0%;transition:width .5s;box-shadow:0 0 16px rgba(214,187,128,0.6)}
+.prog-step{font-size:11px;color:var(--muted);letter-spacing:.08em}
+
+/* ── RESULTS ─────────────────────────────────────────────────────── */
+#results{display:none;animation:fadeUp .4s ease}
+#results.visible{display:block}
+
+/* Issue card */
+.issue-card{
+  margin:0 16px 12px;padding:20px;border-radius:var(--radius);
+  background:var(--surface);border:1px solid var(--border2);
+  border-top:4px solid var(--warn);
+}
+.issue-card.sev-med{border-top-color:var(--gold)}
+.issue-card.sev-low{border-top-color:var(--ok)}
+.ic-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--warn);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.issue-card.sev-med .ic-label{color:var(--gold)}
+.issue-card.sev-low .ic-label{color:var(--ok)}
+.sev-pill{padding:3px 10px;border-radius:20px;font-size:9px;font-weight:600}
+.sev-pill.high{background:rgba(200,124,80,.2);color:var(--warn)}
+.sev-pill.med{background:rgba(194,160,114,.2);color:var(--gold)}
+.sev-pill.low{background:rgba(122,171,110,.15);color:var(--ok)}
+.ic-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:800;
+  line-height:1.25;margin-bottom:10px}
+.ic-desc{font-size:13px;color:rgba(255,255,255,.6);line-height:1.75;margin-bottom:12px}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:10px;padding:4px 10px;border-radius:20px;
+  background:rgba(194,160,114,.1);color:var(--accent);letter-spacing:.05em}
+
+/* Matched SOPs */
+.section-head{
+  padding:16px 16px 8px;font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);
+  display:flex;align-items:center;gap:8px;
+}
+.section-head::after{content:'';flex:1;height:1px;background:rgba(194,160,114,.15)}
+
+.sop-match-list{padding:0 16px 4px;display:flex;flex-direction:column;gap:8px}
+.sop-match-card{
+  background:var(--surface);border:1px solid rgba(194,160,114,.2);
+  border-radius:10px;padding:14px 16px;
+  display:flex;align-items:center;gap:14px;
+}
+.smc-score{font-family:'Playfair Display',serif;font-size:26px;font-weight:800;
+  color:var(--accent);flex-shrink:0;line-height:1}
+.smc-info{flex:1}
+.smc-name{font-size:13px;font-weight:500;line-height:1.4;margin-bottom:3px}
+.smc-id{font-size:10px;color:var(--muted)}
+.smc-cat{font-size:9px;text-transform:uppercase;letter-spacing:.1em;
+  padding:3px 8px;border-radius:20px;flex-shrink:0}
+.cat-maint{background:rgba(136,153,187,.15);color:#8899bb}
+.cat-safety{background:rgba(200,124,80,.15);color:var(--warn)}
+.cat-quality{background:rgba(194,160,114,.15);color:var(--gold)}
+.cat-ops{background:rgba(194,160,114,.15);color:var(--accent)}
+
+/* Checklist */
+.cl-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 16px 8px;
+}
+.cl-progress{
+  font-family:'Playfair Display',serif;font-size:15px;font-weight:700;
+  color:var(--ok);
+}
+.checklist{list-style:none;padding:0 16px;margin-bottom:12px}
+.ci{
+  display:flex;gap:14px;align-items:flex-start;
+  padding:16px 0;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:opacity .2s;
+  -webkit-user-select:none;user-select:none;
+}
+.ci:last-child{border-bottom:none}
+.ci.done{opacity:.38}
+.ci-box{
+  width:26px;height:26px;flex-shrink:0;margin-top:1px;
+  border:2px solid var(--border2);border-radius:8px;
+  display:grid;place-items:center;transition:all .2s;
+  font-size:14px;
+}
+.ci.done .ci-box{background:var(--ok);border-color:var(--ok);color:var(--bg)}
+.ci-body{flex:1;min-width:0}
+.ci-title{font-size:14px;font-weight:500;line-height:1.4;margin-bottom:5px}
+.ci.done .ci-title{text-decoration:line-through;color:var(--muted)}
+.ci-detail{font-size:12px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:5px}
+.ci-ref{font-size:11px;color:var(--muted)}
+.ci-pri{
+  font-size:9px;text-transform:uppercase;letter-spacing:.1em;
+  padding:3px 8px;border-radius:20px;flex-shrink:0;margin-top:2px;
+  align-self:flex-start;
+}
+.pri-critical{background:rgba(200,124,80,.18);color:var(--warn)}
+.pri-important{background:rgba(194,160,114,.18);color:var(--gold)}
+.pri-standard{background:rgba(90,112,128,.2);color:var(--muted)}
+
+/* Summary */
+.summary-card{
+  margin:0 16px 12px;padding:18px;background:var(--surface);
+  border-radius:var(--radius);border:1px solid var(--border2);
+}
+.sum-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:10px}
+.sum-text{font-size:13px;color:rgba(255,255,255,.7);line-height:1.8}
+
+/* ── BOTTOM ACTION BAR ───────────────────────────────────────────── */
+.bottom-bar{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:12px 16px;padding-bottom:calc(12px + var(--safe-bottom));
+  display:none;gap:10px;z-index:90;
+}
+.bottom-bar.visible{display:flex}
+.bb-btn{
+  flex:1;padding:14px;border-radius:10px;border:1px solid var(--border2);
+  background:var(--surface2);color:var(--muted);
+  font-family:'Playfair Display',serif;font-size:13px;font-weight:700;
+  cursor:pointer;text-align:center;transition:all .15s;
+}
+.bb-btn:active{opacity:.7}
+.bb-btn.primary{background:linear-gradient(135deg,var(--accent3),var(--accent2));color:#0a0d15;border-color:transparent;font-weight:700}
+
+/* ── SOP LIBRARY DRAWER ──────────────────────────────────────────── */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;backdrop-filter:blur(4px)}
+.drawer-overlay.open{display:block}
+.drawer{
+  position:fixed;bottom:0;left:0;right:0;z-index:201;
+  background:var(--surface);border-radius:20px 20px 0 0;
+  max-height:85vh;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.drawer-overlay.open .drawer{transform:translateY(0)}
+.drawer-handle{width:40px;height:4px;background:rgba(194,160,114,.3);border-radius:2px;margin:14px auto 0}
+.drawer-head{padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between}
+.drawer-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:800}
+.drawer-close{font-size:20px;color:var(--muted);cursor:pointer;padding:4px 8px}
+.drawer-scroll{overflow-y:auto;padding:12px 16px 40px;flex:1}
+.drawer-sop-item{
+  padding:14px 16px;border-radius:10px;background:var(--surface2);
+  margin-bottom:8px;border:1px solid var(--border2);
+}
+.dsi-name{font-size:13px;font-weight:500;margin-bottom:4px}
+.dsi-meta{font-size:10px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.dsi-imported{font-size:9px;padding:2px 7px;border-radius:20px;
+  background:rgba(194,160,114,.1);color:var(--accent)}
+.drawer-add-btn{
+  width:100%;padding:14px;border-radius:10px;
+  border:2px dashed var(--border2);background:transparent;
+  color:var(--muted);font-family:'Playfair Display',serif;font-size:14px;font-weight:700;
+  cursor:pointer;margin-top:4px;transition:all .2s;
+}
+.drawer-add-btn:active{border-color:var(--accent);color:var(--accent)}
+
+/* Add SOP sheet */
+.add-sheet{
+  position:fixed;inset:0;z-index:300;background:var(--bg);
+  overflow-y:auto;display:none;
+  padding:0 0 calc(40px + var(--safe-bottom));
+}
+.add-sheet.open{display:block}
+.sheet-head{
+  position:sticky;top:0;background:var(--surface);
+  border-bottom:1px solid var(--border);padding:16px 20px;
+  display:flex;align-items:center;justify-content:space-between;z-index:10;
+  padding-top:calc(16px + env(safe-area-inset-top,0px));
+}
+.sheet-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:800}
+.sheet-cancel{color:var(--accent);font-size:14px;cursor:pointer;padding:4px}
+.sheet-body{padding:24px 20px}
+.field{margin-bottom:20px}
+.field label{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.field input,.field textarea,.field select{
+  width:100%;background:var(--surface2);border:2px solid var(--border2);
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;
+  padding:14px 16px;border-radius:10px;outline:none;transition:border-color .2s;
+}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
+.field textarea{min-height:140px;resize:none;line-height:1.6}
+.field select{-webkit-appearance:none}
+.sheet-save{
+  width:calc(100% - 40px);margin:0 20px;padding:16px;
+  background:var(--accent);color:var(--bg);border:none;border-radius:10px;
+  font-family:'Playfair Display',serif;font-size:16px;font-weight:800;
+  cursor:pointer;
+}
+
+/* ── TOAST ───────────────────────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:calc(110px + var(--safe-bottom));left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:rgba(14,20,25,.95);border:1px solid var(--border2);
+  color:var(--text);padding:12px 20px;font-size:13px;border-radius:40px;
+  transition:all .25s;z-index:500;white-space:nowrap;
+  opacity:0;pointer-events:none;backdrop-filter:blur(10px);
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ── MISC ────────────────────────────────────────────────────────── */
+#fileInput{display:none}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="logo"><div class="logo-icon"><svg width="32" height="32" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer ring — nearly fills the badge like Safari -->
+  <circle cx="22" cy="22" r="21.5" stroke="#0a0d15" stroke-width="1.6" fill="none"/>
+  <!-- N tick — long and bold, starts from ring -->
+  <line x1="22" y1="1.8" x2="22" y2="9"  stroke="#0a0d15" stroke-width="2.8" stroke-linecap="round"/>
+  <!-- S tick -->
+  <line x1="22" y1="35" x2="22" y2="42.2" stroke="#0a0d15" stroke-width="1.6" stroke-linecap="round" opacity=".5"/>
+  <!-- E tick -->
+  <line x1="35" y1="22" x2="42.2" y2="22" stroke="#0a0d15" stroke-width="1.6" stroke-linecap="round" opacity=".5"/>
+  <!-- W tick -->
+  <line x1="1.8" y1="22" x2="9"   y2="22" stroke="#0a0d15" stroke-width="1.6" stroke-linecap="round" opacity=".5"/>
+  <!-- NE tick -->
+  <line x1="36.5" y1="7.5" x2="33.0" y2="11.0" stroke="#0a0d15" stroke-width="1.1" stroke-linecap="round" opacity=".35"/>
+  <!-- NW tick -->
+  <line x1="7.5"  y1="7.5" x2="11.0" y2="11.0" stroke="#0a0d15" stroke-width="1.1" stroke-linecap="round" opacity=".35"/>
+  <!-- SE tick -->
+  <line x1="36.5" y1="36.5" x2="33.0" y2="33.0" stroke="#0a0d15" stroke-width="1.1" stroke-linecap="round" opacity=".35"/>
+  <!-- SW tick -->
+  <line x1="7.5"  y1="36.5" x2="11.0" y2="33.0" stroke="#0a0d15" stroke-width="1.1" stroke-linecap="round" opacity=".35"/>
+  <!-- North needle — tip just inside ring -->
+  <path d="M22 4 L25.5 21 L22 24.5 L18.5 21 Z" fill="#0a0d15"/>
+  <!-- South needle — ghost -->
+  <path d="M22 40 L25.5 23 L22 24.5 L18.5 23 Z" fill="#0a0d15" opacity=".28"/>
+  <!-- East needle -->
+  <path d="M40 22 L23 25.5 L24.5 22 L23 18.5 Z" fill="#0a0d15" opacity=".28"/>
+  <!-- West needle -->
+  <path d="M4  22 L21 25.5 L19.5 22 L21 18.5 Z" fill="#0a0d15"/>
+  <!-- Center pivot -->
+  <circle cx="22" cy="22" r="3.2" fill="#0a0d15"/>
+  <circle cx="22" cy="22" r="1.4" fill="rgba(255,255,255,0.42)"/>
+</svg></div><span style="letter-spacing:-.01em">Meri<em style="font-style:normal;margin-left:-.5px">dian</em></span></div>
+  <div class="hdr-pill">Field Intelligence</div>
+</header>
+
+<!-- CONNECTION CHECK SCREEN -->
+<div id="apiScreen" class="body">
+  <div id="apiCard" class="api-card" style="margin:40px auto 0">
+    <h2>Meridian</h2>
+    <p>Checking connection to Meridian server...</p>
+    <div id="apiError" class="api-error" style="display:none"></div>
+    <div id="serverStatus" style="font-size:13px;line-height:1.9;color:rgba(255,255,255,.5);margin-top:16px">
+      If this screen stays open, make sure <strong style="color:var(--accent)">server.py</strong> is running:<br>
+      <code style="background:var(--surface2);padding:6px 10px;border-radius:6px;display:inline-block;margin-top:8px;font-size:12px">python3 server.py</code>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP SCREEN -->
+<div id="appScreen" class="body">
+
+  <!-- Capture zone -->
+  <div class="capture-zone" id="captureZone"
+       onclick="zoneClick()"
+       ondragover="event.preventDefault();this.classList.add('drag-over')"
+       ondragleave="this.classList.remove('drag-over')"
+       ondrop="handleDrop(event)">
+    <video id="cam" autoplay playsinline></video>
+    <img id="preview" src="" alt="">
+    <div class="capture-idle">
+      <span class="ci-icon">&#128247;</span>
+      <h3>Tap to capture an issue</h3>
+      <p>Photo, camera, or drag &amp; drop.<br>AI matches your SOPs and builds a repair checklist.</p>
+    </div>
+    <div class="img-info">
+      <span id="imgName">-</span><span id="imgSize">-</span>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="action-grid" id="actionGrid">
+    <button class="ab ab-camera" id="camBtn" onclick="toggleCam()">
+      <span class="ab-icon">&#128247;</span>Camera
+    </button>
+    <button class="ab ab-upload" onclick="document.getElementById('fileInput').click()">
+      <span class="ab-icon">&#8679;</span>Upload
+    </button>
+    <button class="ab ab-analyze" id="analyzeBtn" disabled onclick="runAnalysis()">
+      <span class="ab-icon">&#9889;</span>Analyze Issue
+    </button>
+  </div>
+  <div class="action-grid three" id="clearGrid" style="display:none">
+    <button class="ab ab-upload" onclick="document.getElementById('fileInput').click()" style="min-height:54px;padding:12px">
+      <span class="ab-icon" style="font-size:18px">&#8679;</span><span style="font-size:12px">Upload</span>
+    </button>
+    <button class="ab ab-clear" id="clearPhotoBtn" onclick="clearPhoto()" style="display:flex;min-height:54px;padding:12px">
+      <span class="ab-icon" style="font-size:18px">&#10005;</span><span style="font-size:12px">Clear</span>
+    </button>
+    <button class="ab ab-analyze" id="analyzeBtnB" onclick="runAnalysis()" style="grid-column:unset;min-height:54px;padding:12px">
+      <span class="ab-icon" style="font-size:18px">&#9889;</span><span style="font-size:12px">Analyze</span>
+    </button>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-card" id="progressCard">
+    <div class="prog-label" id="progLabel">Analyzing...</div>
+    <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-step" id="progStep">Starting</div>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+
+    <div class="issue-card" id="issueCard">
+      <div class="ic-label" id="icLabel"></div>
+      <div class="ic-title" id="icTitle"></div>
+      <div class="ic-desc"  id="icDesc"></div>
+      <div class="tag-row"  id="tagRow"></div>
+    </div>
+
+    <div class="section-head">Matched SOPs</div>
+    <div class="sop-match-list" id="sopMatchList"></div>
+
+    <div class="cl-header">
+      <div class="section-head" style="padding:0;flex:1">Resolution Checklist</div>
+      <div class="cl-progress"><span id="doneCount">0</span>&nbsp;/&nbsp;<span id="totalCount">0</span></div>
+    </div>
+    <ul class="checklist" id="checklist"></ul>
+
+    <div class="section-head">AI Recommendation</div>
+    <div class="summary-card">
+      <div class="sum-label">Summary</div>
+      <div class="sum-text" id="summaryText"></div>
+    </div>
+
+  </div><!-- /results -->
+
+  <!-- Bottom action bar (shown when results visible) -->
+  <div class="bottom-bar" id="bottomBar">
+    <button class="bb-btn" onclick="openSopDrawer()">&#128218; SOPs</button>
+    <button class="bb-btn" onclick="clearAll()">&#10005; New Scan</button>
+    <button class="bb-btn primary" onclick="exportReport()">&#8675; Export</button>
+  </div>
+
+</div><!-- /appScreen -->
+
+<input type="file" id="fileInput" accept="image/*" capture="environment" onchange="handleFile(event)">
+
+<!-- SOP Library Drawer -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeSopDrawer()">
+  <div class="drawer" onclick="event.stopPropagation()">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <div class="drawer-title">SOP Library <span id="sopCountBadge" style="color:var(--accent);font-size:14px"></span></div>
+      <div class="drawer-close" onclick="closeSopDrawer()">&#10005;</div>
+    </div>
+    <div class="drawer-scroll" id="drawerScroll"></div>
+  </div>
+</div>
+
+<!-- Add SOP Sheet -->
+<div class="add-sheet" id="addSheet">
+  <div class="sheet-head">
+    <div class="sheet-title">Add SOP</div>
+    <div class="sheet-cancel" onclick="closeAddSheet()">Cancel</div>
+  </div>
+  <div class="sheet-body">
+    <div class="field"><label>SOP Name</label><input id="mName" placeholder="e.g. Hydraulic Leak Inspection"></div>
+    <div class="field"><label>Category</label>
+      <select id="mCat"><option value="maint">Maintenance</option><option value="safety">Safety</option><option value="ops">Operations</option><option value="quality">Quality</option></select>
+    </div>
+    <div class="field"><label>SOP ID (optional)</label><input id="mId" placeholder="e.g. SOP-MNT-047"></div>
+    <div class="field"><label>Procedure Content</label><textarea id="mContent" placeholder="Paste the full SOP text here..."></textarea></div>
+  </div>
+  <button class="sheet-save" onclick="saveSOP()">Save SOP</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var sops=[
+  {id:'SOP-MAINT-001',name:'Repairing Cracks in Cement/Concrete Surfaces',category:'maint',imported:true,version:'1.0',effectiveDate:'April 15, 2026',
+   content:'PURPOSE: Safe and effective steps for inspecting, preparing, and repairing cracks in cement and concrete. SCOPE: Floors, driveways, sidewalks, patios, slabs, walls, foundations. Non-structural cracks only — cracks wider than 1/2 inch or with vertical displacement require a structural engineer. REQUIRED PPE: Safety glasses, chemical-resistant gloves, N95+ respirator (MANDATORY — silica dust causes silicosis), knee pads, slip-resistant footwear. ENVIRONMENT: 50-90F only. No rain within 24h. Keep bystanders away. CRACK TYPES: Hairline <1/8" use polyurethane caulk; Moderate 1/8-1/2" use vinyl patch or epoxy; Wide >1/2" needs engineer; Active/wet use hydraulic cement first; Spalling remove loose material then resurface. PROCEDURE Step 1 Assess: Inspect full length, measure width, photograph, check moisture, mark extent. Step 2 Prepare: Clear area, sweep, ventilate, don ALL PPE. Step 3 Open/Clean: Chisel hairline cracks to 1/4" min, undercut edges (wider at bottom), wire brush walls, vacuum all dust — surface must be clean and dry. Step 4 Bonding: Apply bonding agent if required, allow 5-15 min to tack. Step 5 Apply: Hairline/moderate use caulk gun at 45 deg overfill slightly tool flush. Wide cracks layer vinyl compound max 1/2" per layer. Active water use hydraulic cement plug held 3-5 min then standard repair. Step 6 Finish: Tool flush, match texture. Step 7 Cure: No foot traffic 24h, no vehicles 72h, cordon off area, mist in hot conditions. Step 8 Inspect: Check for voids delamination shrinkage after cure, photograph, log repair. ESCALATE if: crack >1/2", growing, vertical displacement, pattern cracking, or in structural element.'},
+  {id:'SOP-SAF-001',name:'Electrical Hazard & Lockout/Tagout',category:'safety',content:'Identify exposed wiring, burn marks, sparking. Isolate power at breaker. Apply LOTO. Call electrician. Steps: isolate hazard, alert personnel, lock out, tagout, test zero energy, notify supervisor, log.'},
+  {id:'SOP-MNT-012',name:'Hydraulic System Leak Inspection',category:'maint',content:'Inspect lines, fittings, seals for leaks. Stop equipment. Depressurize. Identify leak. Replace seals. Refill fluid. Pressure test.'},
+  {id:'SOP-OPS-033',name:'Machine Overheating Emergency Shutdown',category:'ops',content:'Signs: burning smell, heat alarms, discolored metal. Emergency stop. Cooldown 15-20min. Check coolant, fans. Supervisor approval to restart.'},
+  {id:'SOP-QA-019',name:'Surface Defect & Corrosion Assessment',category:'quality',content:'Inspect for rust, pitting, cracking. Measure area. Classify severity. Photograph. Log. Notify QA. Root cause. Corrective action.'},
+  {id:'SOP-SAF-008',name:'Chemical Spill Response',category:'safety',content:'Identify chemical. Evacuate 10m. Don PPE. SDS sheet. Contain spill. Absorb. Bag waste. Decontaminate. Incident report.'},
+  {id:'SOP-MNT-031',name:'Structural Crack & Weld Inspection',category:'maint',content:'Inspect welds, joints for cracks. Halt if structural crack. Tag out. NDT test. Notify engineer. Assess load. Plan repair.'}
+];
+
+var capturedImage=null,camStream=null,checkItems=[],analysisData=null,ticker=null,stepIdx=0;
+var progressSteps=[[10,'Compressing image...'],[28,'Scanning for issues...'],[50,'Matching SOPs...'],[72,'Building checklist...'],[88,'Finalising...']];
+
+// ── API KEY ──────────────────────────────────────────────────────────────────
+function getApiKey() {
+  return sessionStorage.getItem('sopsearch_api_key') || '';
+}
+
+function saveApiKey() {
+  // handled by mobile override below
+  var key = document.getElementById('apiKeyInput').value.trim();
+  if (!key || !key.startsWith('sk-ant-')) {
+    var errEl = document.getElementById('apiError');
+    if (errEl) errEl.style.display = 'block';
+    return;
+  }
+  sessionStorage.setItem('sopsearch_api_key', key);
+}
+
+// Check if key already in session on load
+window.addEventListener('load', function() {
+  if (getApiKey()) {
+    /* banner handled by mobile UI */
+    document.getElementById('apiKeyInput').placeholder = 'Key already saved';
+  }
+});
+
+function renderSopBar(matchedIds){
+  matchedIds=matchedIds||[];
+  var bar=document.getElementById('drawerScroll');
+  bar.innerHTML='';
+  sops.forEach(function(s){
+    var chip=document.createElement('div');
+    var isMatch=matchedIds.indexOf(s.id)>-1;
+    chip.className='sop-chip cat-'+s.category+(isMatch?' matched':'');
+    chip.title=s.id+(s.version?' v'+s.version:'');
+    chip.textContent=(s.imported?'[imported] ':'')+s.name.split(' ').slice(0,5).join(' ')+(s.name.split(' ').length>5?'...':'');
+    bar.appendChild(chip);
+  });
+  document.getElementById('sopCountBadge').textContent=sops.length+' loaded';
+}
+
+function handleFile(e){
+  var file=e.target.files[0]; if(!file) return;
+  var r=new FileReader();
+  r.onload=function(ev){setImage(ev.target.result,file.name,(file.size/1024).toFixed(0)+' KB');};
+  r.readAsDataURL(file); e.target.value='';
+}
+
+function clearPhoto(){
+  capturedImage=null;
+  var zone=document.getElementById('captureZone'),img=document.getElementById('preview');
+  img.src=''; img.style.display='none'; zone.classList.remove('has-image');
+  document.getElementById('imgName').textContent='-';
+  document.getElementById('imgSize').textContent='-';
+  document.getElementById('analyzeBtn').disabled=true;
+  document.getElementById('clearPhotoBtn').style.display='none';
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('results').style.display='none';
+  renderSopBar();
+}
+
+function handleDrop(e){
+  e.preventDefault(); document.getElementById('captureZone').classList.remove('drag-over');
+  var file=e.dataTransfer.files[0]; if(!file||!file.type.startsWith('image/')) return;
+  var r=new FileReader();
+  r.onload=function(ev){setImage(ev.target.result,file.name,(file.size/1024).toFixed(0)+' KB');};
+  r.readAsDataURL(file);
+}
+
+function setImage(dataUrl,name,meta){
+  capturedImage=dataUrl;
+  var zone=document.getElementById('captureZone'),img=document.getElementById('preview');
+  img.src=dataUrl; img.style.display='block'; zone.classList.add('has-image');
+  document.getElementById('imgName').textContent=name;
+  var kb=Math.round(dataUrl.length*3/4/1024);
+  document.getElementById('imgSize').textContent=meta+(kb>5120?' - will compress':'');
+  document.getElementById('analyzeBtn').disabled=false;
+  document.getElementById('clearPhotoBtn').style.display='flex';
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('results').style.display='none';
+}
+
+async function toggleCam(){
+  var btn=document.getElementById('camBtn'),vid=document.getElementById('cam');
+  if(camStream){camStream.getTracks().forEach(function(t){t.stop();});camStream=null;vid.style.display='none';btn.textContent='\uD83D\uDCF7 Camera';btn.onclick=toggleCam;return;}
+  try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});vid.srcObject=camStream;vid.style.display='block';btn.textContent='\uD83D\uDCF8 Capture';btn.onclick=captureFrame;}
+  catch(e){showToast('Camera unavailable');}
+}
+
+function captureFrame(){
+  var vid=document.getElementById('cam'),c=document.createElement('canvas');
+  c.width=vid.videoWidth;c.height=vid.videoHeight;c.getContext('2d').drawImage(vid,0,0);
+  var d=c.toDataURL('image/jpeg',0.9);
+  camStream.getTracks().forEach(function(t){t.stop();}); camStream=null;
+  document.getElementById('cam').style.display='none';
+  document.getElementById('camBtn').textContent='\uD83D\uDCF7 Camera';
+  document.getElementById('camBtn').onclick=toggleCam;
+  setImage(d,'camera-capture.jpg',c.width+'x'+c.height);
+}
+
+function compressImage(dataUrl,maxMB){
+  return new Promise(function(resolve){
+    var img=new Image();
+    img.onload=function(){
+      var MAX=maxMB*1024*1024,w=img.naturalWidth,h=img.naturalHeight;
+      if(Math.max(w,h)>1280){var s=1280/Math.max(w,h);w=Math.round(w*s);h=Math.round(h*s);}  // 1280px max edge
+      var q=0.88,result,tries=0;
+      do{
+        var cv=document.createElement('canvas');cv.width=w;cv.height=h;
+        cv.getContext('2d').drawImage(img,0,0,w,h);
+        result=cv.toDataURL('image/jpeg',q);
+        if((result.length*3/4)<=MAX) break;
+        if(q>0.4) q-=0.12; else{w=Math.round(w*.8);h=Math.round(h*.8);q=0.75;}
+        tries++;
+      } while(tries<12);
+      resolve(result);
+    };
+    img.src=dataUrl;
+  });
+}
+
+function startProgress(){
+  document.getElementById('progressCard').classList.add('active');
+  stepIdx=0; if(ticker) clearInterval(ticker);
+  ticker=setInterval(function(){
+    if(stepIdx<progressSteps.length){
+      document.getElementById('progFill').style.width=progressSteps[stepIdx][0]+'%';
+      document.getElementById('progStep').textContent=progressSteps[stepIdx][1];
+      stepIdx++;
+    }
+  },900);
+}
+
+function stopProgress(ok){
+  if(ticker){clearInterval(ticker);ticker=null;}
+  if(ok) document.getElementById('progFill').style.width='100%';
+  setTimeout(function(){document.getElementById('progressCard').classList.remove('active');document.getElementById('progFill').style.width='0%';},ok?700:0);
+}
+
+async function runAnalysis(){
+  if(!capturedImage) return;
+  if(!getApiKey()){
+    showToast('Please enter your Anthropic API key first');
+    document.getElementById('apiKeyInput').focus();
+    return;
+  }
+  // Disable both button variants (desktop + mobile)
+  var btnA = document.getElementById('analyzeBtn');
+  var btnB = document.getElementById('analyzeBtnB');
+  if (btnA) btnA.disabled = true;
+  if (btnB) btnB.disabled = true;
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('results').style.display='none';
+  startProgress();
+  try{
+    // Compress image
+    var compressed = await compressImage(capturedImage, 1.0);
+    var b64 = compressed.split(',')[1];
+    console.log('Compressed:', Math.round(b64.length * 3 / 4 / 1024), 'KB');
+
+    // Build concise SOP context
+    var sopCtx = sops.map(function(s) {
+      var body = s.imported ? s.content.substring(0, 800) : s.content.substring(0, 120) + '...';
+      return '[' + s.id + '] ' + s.name + (s.imported ? ' [PRIMARY]' : '') + ': ' + body;
+    }).join('\n\n');
+
+    var prompt = 'You are a maintenance inspector. Analyze this image carefully.\n\n'
+      + 'SOP LIBRARY:\n' + sopCtx + '\n\n'
+      + 'Return ONLY this JSON object, no other text:\n'
+      + '{"issue_title":"short title","issue_description":"2 sentences describing the issue",'
+      + '"severity":"HIGH or MEDIUM or LOW","tags":["tag1","tag2"],'
+      + '"matched_sops":[{"id":"SOP-MAINT-001","name":"SOP name","relevance":95}],'
+      + '"checklist":[{"step":1,"title":"Step title","detail":"Full instruction.","ref":"SOP-MAINT-001 section","priority":"critical or important or standard"}],'
+      + '"summary":"2 sentence recommendation"}';
+
+    // Build request body
+    var reqBody = {
+      model: 'claude-sonnet-4-5',
+      max_tokens: 2048,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } },
+          { type: 'text',  text: prompt }
+        ]
+      }]
+    };
+    var bodyStr = JSON.stringify(reqBody);
+    console.log('Request body KB:', Math.round(bodyStr.length/1024));
+    console.log('Model:', reqBody.model);
+    console.log('Image data length:', b64.length);
+
+    // Call the local proxy server — avoids all browser CORS restrictions
+    // server.py forwards the request to Anthropic with the API key server-side
+    var respText = await new Promise(function(resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/analyze', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.timeout = 90000;
+      xhr.onload = function() {
+        console.log('Proxy status:', xhr.status);
+        console.log('Response preview:', xhr.responseText.substring(0, 400));
+        resolve(xhr.responseText);
+      };
+      xhr.onerror = function() {
+        reject(new Error('Cannot reach local server. Is server.py running? Open a terminal and run: python3 server.py'));
+      };
+      xhr.ontimeout = function() {
+        reject(new Error('Request timed out after 90 seconds'));
+      };
+      xhr.send(bodyStr);
+    });
+
+    var data;
+    try { data = JSON.parse(respText); }
+    catch(e) { throw new Error('Response not JSON: ' + respText.substring(0, 200)); }
+
+    if (data.error) throw new Error('API: ' + data.error.type + ' — ' + data.error.message);
+    if (!data.content || !data.content.length) throw new Error('Empty API response');
+
+    var raw = '';
+    for (var i = 0; i < data.content.length; i++) {
+      if (data.content[i].type === 'text') { raw = data.content[i].text; break; }
+    }
+    console.log('Response chars:', raw.length);
+
+    raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    var jStart = raw.indexOf('{');
+    var jEnd   = raw.lastIndexOf('}');
+    if (jStart === -1 || jEnd <= jStart) throw new Error('No JSON in response: ' + raw.substring(0, 150));
+
+    var parsed;
+    try { parsed = JSON.parse(raw.substring(jStart, jEnd + 1)); }
+    catch(e) { throw new Error('JSON parse error: ' + e.message); }
+
+    parsed.issue_title       = parsed.issue_title       || 'Issue Detected';
+    parsed.issue_description = parsed.issue_description || '';
+    parsed.severity          = parsed.severity          || 'MEDIUM';
+    parsed.tags              = parsed.tags              || [];
+    parsed.matched_sops      = parsed.matched_sops      || [];
+    parsed.checklist         = Array.isArray(parsed.checklist) ? parsed.checklist : [];
+    parsed.summary           = parsed.summary           || '';
+
+    stopProgress(true);
+    analysisData=parsed;
+    checkItems=parsed.checklist.map(function(c,i){return Object.assign({},c,{done:false,idx:i});});
+    renderResults();
+  }catch(err){
+    stopProgress(false);
+    showToast('Error: '+(err.message||String(err)).substring(0,90));
+    console.error(err);
+    if (btnA) btnA.disabled = false;
+    if (btnB) btnB.disabled = false;
+  }
+}
+
+function renderResults(){
+  var r=analysisData;
+  console.log('renderResults:',r.issue_title,'checklist:',r.checklist.length);
+  var mids=r.matched_sops.map(function(s){return s.id;});
+  renderSopBar(mids);
+
+  var sev=(r.severity||'MEDIUM').toUpperCase();
+  var sevKey=sev==='HIGH'?'high':sev==='LOW'?'low':'med';
+  var banner=document.getElementById('issueCard');
+  banner.className='issue-banner sev-'+sevKey;
+  document.getElementById('icLabel').textContent='Warning: '+sev+' SEVERITY';
+  document.getElementById('icTitle').textContent=r.issue_title;
+  document.getElementById('icDesc').textContent=r.issue_description;
+  var tagsEl=document.getElementById('tagRow');
+  tagsEl.innerHTML='<span class="sev-badge '+sevKey+'">'+sev+'</span>';
+  (r.tags||[]).forEach(function(t){tagsEl.innerHTML+='<span class="ib-tag">'+t+'</span>';});
+
+  var strip=document.getElementById('sopMatchList');
+  strip.innerHTML='';
+  r.matched_sops.forEach(function(ms){
+    var localSop=null;
+    for(var i=0;i<sops.length;i++){if(sops[i].id===ms.id){localSop=sops[i];break;}}
+    var cat=localSop?localSop.category:'ops';
+    var catLabel={safety:'Safety',maint:'Maint',ops:'Ops',quality:'QA'}[cat]||cat;
+    var card=document.createElement('div');
+    card.className='matched-card';
+    card.innerHTML='<div class="mc-score">'+(ms.relevance||'?')+'%</div><div class="mc-name">'+(ms.name||ms.id)+'</div><div class="mc-cat sop-chip cat-'+cat+'">'+catLabel+'</div>';
+    strip.appendChild(card);
+  });
+
+  var ul=document.getElementById('checklist');
+  ul.innerHTML='';
+  document.getElementById('totalCount').textContent=checkItems.length;
+  document.getElementById('doneCount').textContent='0';
+
+  checkItems.forEach(function(item,i){
+    var li=document.createElement('li');
+    li.className='check-item'; li.id='ci-'+i;
+    var priClass=item.priority==='critical'?'pri-critical':item.priority==='important'?'pri-important':'pri-standard';
+    li.innerHTML=
+      '<div class="check-box"></div>'+
+      '<div class="check-body">'+
+        '<div class="check-title">'+item.step+'. '+item.title+'</div>'+
+        '<div class="check-detail">'+(item.detail||'')+'</div>'+
+        '<div class="check-ref">'+(item.ref||'')+'</div>'+
+      '</div>'+
+      '<div class="check-pri '+priClass+'">'+(item.priority||'standard')+'</div>';
+    li.addEventListener('click',(function(idx){return function(){toggleCheck(idx);};})(i));
+    ul.appendChild(li);
+  });
+
+  document.getElementById('summaryText').textContent=r.summary;
+
+  // Show results — use both property and class to be safe
+  var resultsEl=document.getElementById('results');
+  resultsEl.style.display='block';
+  resultsEl.classList.add('visible');
+
+  document.getElementById('analyzeBtn').disabled=false;
+  console.log('Results displayed. Children:',resultsEl.children.length);
+
+  // Scroll results into view
+  setTimeout(function(){resultsEl.scrollIntoView({behavior:'smooth',block:'start'});},150);
+}
+
+function toggleCheck(idx){
+  checkItems[idx].done=!checkItems[idx].done;
+  var li=document.getElementById('ci-'+idx);
+  if(li) li.classList.toggle('done',checkItems[idx].done);
+  var done=checkItems.filter(function(c){return c.done;}).length;
+  document.getElementById('doneCount').textContent=done;
+}
+
+function clearResults(){
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('results').style.display='none';
+  analysisData=null; checkItems=[]; renderSopBar();
+}
+
+function exportReport(){
+  if(!analysisData) return;
+  var r=analysisData,done=checkItems.filter(function(c){return c.done;}).length;
+  var lines=['Meridian - Issue Report','Date: '+new Date().toLocaleString(),'Issue: '+r.issue_title,'Severity: '+r.severity,'','DESCRIPTION',r.issue_description,'','MATCHED SOPs'];
+  (r.matched_sops||[]).forEach(function(s){lines.push('- ['+s.relevance+'%] '+s.id+' - '+s.name);});
+  lines.push('','CHECKLIST ('+done+'/'+checkItems.length+' complete)');
+  checkItems.forEach(function(c){lines.push('['+( c.done?'X':' ')+'] '+c.step+'. '+c.title);if(c.detail)lines.push('    '+c.detail);if(c.ref)lines.push('    Ref: '+c.ref);});
+  lines.push('','RECOMMENDATION',r.summary);
+  var blob=new Blob([lines.join('\n')],{type:'text/plain'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Meridian_Report_'+Date.now()+'.txt';a.click();
+}
+
+function saveSOP(){
+  var name=document.getElementById('mName').value.trim(),body=document.getElementById('mContent').value.trim(),cat=document.getElementById('mCat').value,id=document.getElementById('mId').value.trim()||'SOP-'+cat.toUpperCase()+'-'+(sops.length+1);
+  if(!name||!body){showToast('Fill in name and content');return;}
+  sops.push({id:id,name:name,category:cat,content:body});
+  // drawer handled by mobile override
+  ['mName','mContent','mId'].forEach(function(i){document.getElementById(i).value='';});
+  showToast('Added: '+name);
+}
+
+function showToast(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},3200);
+}
+
+renderSopBar();
+
+// ── MOBILE UI OVERRIDES ───────────────────────────────────────────────────────
+
+// Override saveApiKey for new screen flow
+function saveApiKey() {
+  var key = document.getElementById('apiKeyInput').value.trim();
+  if (!key || !key.startsWith('sk-ant-')) {
+    document.getElementById('apiError').style.display = 'block';
+    return;
+  }
+  sessionStorage.setItem('sopsearch_api_key', key);
+  document.getElementById('apiScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+}
+
+// Override setImage for mobile UI
+function setImage(dataUrl, name, meta) {
+  capturedImage = dataUrl;
+  var img = document.getElementById('preview');
+  img.src = dataUrl; img.style.display = 'block';
+  document.getElementById('captureZone').classList.add('has-image');
+  document.getElementById('imgName').textContent = name;
+  document.getElementById('imgSize').textContent = meta;
+  // Switch button grids
+  document.getElementById('actionGrid').style.display = 'none';
+  document.getElementById('clearGrid').style.display = 'grid';
+  document.getElementById('analyzeBtnB').disabled = false;
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('bottomBar').classList.remove('visible');
+}
+
+// Override clearPhoto for mobile UI
+function clearPhoto() {
+  capturedImage = null;
+  var img = document.getElementById('preview');
+  img.src = ''; img.style.display = 'none';
+  document.getElementById('captureZone').classList.remove('has-image');
+  document.getElementById('actionGrid').style.display = 'grid';
+  document.getElementById('clearGrid').style.display = 'none';
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('bottomBar').classList.remove('visible');
+}
+
+// Override clearResults / clearAll
+function clearAll() {
+  clearPhoto();
+  analysisData = null; checkItems = [];
+}
+
+function clearResults() { clearAll(); }
+
+// Override startProgress / stopProgress
+function startProgress() {
+  document.getElementById('progressCard').classList.add('active');
+  stepIdx = 0;
+  if (ticker) clearInterval(ticker);
+  ticker = setInterval(function() {
+    if (stepIdx < progressSteps.length) {
+      document.getElementById('progFill').style.width = progressSteps[stepIdx][0] + '%';
+      document.getElementById('progStep').textContent = progressSteps[stepIdx][1];
+      stepIdx++;
+    }
+  }, 900);
+}
+
+function stopProgress(ok) {
+  if (ticker) { clearInterval(ticker); ticker = null; }
+  if (ok) document.getElementById('progFill').style.width = '100%';
+  setTimeout(function() {
+    document.getElementById('progressCard').classList.remove('active');
+    document.getElementById('progFill').style.width = '0%';
+  }, ok ? 700 : 0);
+}
+
+// Override runAnalysis guard for mobile
+// runAnalysis handled by original below
+
+// Override renderResults for mobile layout
+function renderResults() {
+  var r = analysisData;
+  var mids = r.matched_sops.map(function(s){return s.id;});
+
+  // Issue card
+  var sev = (r.severity||'MEDIUM').toUpperCase();
+  var sevKey = sev==='HIGH'?'high':sev==='LOW'?'low':'med';
+  var card = document.getElementById('issueCard');
+  card.className = 'issue-card sev-' + sevKey;
+  document.getElementById('icLabel').innerHTML = '<span class="sev-pill '+sevKey+'">'+sev+'</span> Issue Identified';
+  document.getElementById('icTitle').textContent = r.issue_title;
+  document.getElementById('icDesc').textContent  = r.issue_description;
+  var tagRow = document.getElementById('tagRow');
+  tagRow.innerHTML = '';
+  (r.tags||[]).forEach(function(t){
+    var s = document.createElement('span'); s.className='tag'; s.textContent=t; tagRow.appendChild(s);
+  });
+
+  // Matched SOPs
+  var list = document.getElementById('sopMatchList'); list.innerHTML='';
+  r.matched_sops.forEach(function(ms){
+    var local = sops.find(function(s){return s.id===ms.id;});
+    var cat = local ? local.category : 'ops';
+    var div = document.createElement('div'); div.className='sop-match-card';
+    div.innerHTML = '<div class="smc-score">'+(ms.relevance||'?')+'%</div>'
+      +'<div class="smc-info"><div class="smc-name">'+(ms.name||ms.id)+'</div>'
+      +'<div class="smc-id">'+ms.id+'</div></div>'
+      +'<div class="smc-cat cat-'+cat+'">'+({maint:'Maint',safety:'Safety',ops:'Ops',quality:'QA'}[cat]||cat)+'</div>';
+    list.appendChild(div);
+  });
+
+  // Checklist
+  var ul = document.getElementById('checklist'); ul.innerHTML='';
+  document.getElementById('totalCount').textContent = checkItems.length;
+  document.getElementById('doneCount').textContent  = '0';
+  checkItems.forEach(function(item, i) {
+    var li = document.createElement('li'); li.className='ci'; li.id='ci-'+i;
+    var priClass = item.priority==='critical'?'pri-critical':item.priority==='important'?'pri-important':'pri-standard';
+    li.innerHTML = '<div class="ci-box"></div>'
+      +'<div class="ci-body">'
+        +'<div class="ci-title">'+item.step+'. '+item.title+'</div>'
+        +'<div class="ci-detail">'+(item.detail||'')+'</div>'
+        +'<div class="ci-ref">'+(item.ref||'')+'</div>'
+      +'</div>'
+      +'<div class="ci-pri '+priClass+'">'+(item.priority||'standard')+'</div>';
+    li.addEventListener('click', (function(idx){return function(){toggleCheckMobile(idx);};})(i));
+    ul.appendChild(li);
+  });
+
+  // Summary
+  document.getElementById('summaryText').textContent = r.summary;
+
+  // Show results + bottom bar
+  var resultsEl = document.getElementById('results');
+  resultsEl.style.display = 'block';
+  resultsEl.classList.add('visible');
+  document.getElementById('bottomBar').classList.add('visible');
+
+  setTimeout(function(){
+    resultsEl.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 200);
+}
+
+function toggleCheckMobile(idx) {
+  checkItems[idx].done = !checkItems[idx].done;
+  var li = document.getElementById('ci-'+idx);
+  if (li) {
+    li.classList.toggle('done', checkItems[idx].done);
+    li.querySelector('.ci-box').textContent = checkItems[idx].done ? '✓' : '';
+  }
+  var done = checkItems.filter(function(c){return c.done;}).length;
+  document.getElementById('doneCount').textContent = done;
+}
+
+// Camera — fullscreen on mobile
+function zoneClick() {
+  if (capturedImage) return;
+  if (camStream) { captureFrame(); return; }
+  document.getElementById('fileInput').click();
+}
+
+async function toggleCam() {
+  var btn = document.getElementById('camBtn');
+  var vid = document.getElementById('cam');
+
+  // Already streaming — stop it
+  if (camStream) {
+    camStream.getTracks().forEach(function(t){t.stop();}); camStream=null;
+    vid.style.display='none';
+    btn.innerHTML='<span class="ab-icon">&#128247;</span>Camera';
+    return;
+  }
+
+  // getUserMedia requires a secure context (https or localhost)
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showToast('Camera requires HTTPS — use Upload instead');
+    return;
+  }
+
+  // Try rear camera first, fall back to any camera
+  var constraints = [
+    {video:{facingMode:{exact:'environment'}}},
+    {video:{facingMode:'environment'}},
+    {video:true}
+  ];
+
+  var lastErr = null;
+  for (var ci = 0; ci < constraints.length; ci++) {
+    try {
+      camStream = await navigator.mediaDevices.getUserMedia(constraints[ci]);
+      vid.srcObject = camStream;
+      vid.style.display = 'block';
+      btn.innerHTML = '<span class="ab-icon">&#128248;</span>Capture';
+      return; // success
+    } catch(e) {
+      lastErr = e;
+      camStream = null;
+    }
+  }
+
+  // All attempts failed — give a specific message
+  var msg = 'Camera unavailable';
+  if (lastErr) {
+    if (lastErr.name === 'NotAllowedError' || lastErr.name === 'PermissionDeniedError') {
+      msg = 'Camera permission denied — allow in browser settings';
+    } else if (lastErr.name === 'NotFoundError' || lastErr.name === 'DevicesNotFoundError') {
+      msg = 'No camera found on this device';
+    } else if (lastErr.name === 'NotReadableError' || lastErr.name === 'TrackStartError') {
+      msg = 'Camera in use by another app';
+    } else if (lastErr.name === 'OverconstrainedError') {
+      msg = 'Camera constraint failed — try Upload';
+    } else {
+      msg = 'Camera error: ' + (lastErr.message || lastErr.name || 'unknown');
+    }
+  }
+  showToast(msg);
+  console.error('Camera error:', lastErr);
+}
+
+function captureFrame() {
+  var vid=document.getElementById('cam');
+  var c=document.createElement('canvas');
+  c.width=vid.videoWidth; c.height=vid.videoHeight;
+  c.getContext('2d').drawImage(vid,0,0);
+  var d=c.toDataURL('image/jpeg',0.9);
+  camStream.getTracks().forEach(function(t){t.stop();}); camStream=null;
+  vid.style.display='none';
+  document.getElementById('camBtn').innerHTML='<span class="ab-icon">&#128247;</span>Camera';
+  setImage(d,'Camera capture',c.width+'×'+c.height+'px');
+}
+
+// SOP Drawer
+function openSopDrawer() {
+  renderDrawer();
+  document.getElementById('drawerOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeSopDrawer() {
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function renderDrawer() {
+  var scroll=document.getElementById('drawerScroll'); scroll.innerHTML='';
+  document.getElementById('sopCountBadge').textContent = sops.length;
+  sops.forEach(function(s){
+    var d=document.createElement('div'); d.className='drawer-sop-item';
+    d.innerHTML='<div class="dsi-name">'+s.name+'</div>'
+      +'<div class="dsi-meta">'
+        +'<span>'+s.id+'</span>'
+        +(s.version?'<span>v'+s.version+'</span>':'')
+        +(s.imported?'<span class="dsi-imported">imported</span>':'')
+      +'</div>';
+    scroll.appendChild(d);
+  });
+  var addBtn=document.createElement('button'); addBtn.className='drawer-add-btn';
+  addBtn.textContent='+ Add SOP'; addBtn.onclick=openAddSheet;
+  scroll.appendChild(addBtn);
+}
+function openAddSheet(){closeSopDrawer();document.getElementById('addSheet').classList.add('open');}
+function closeAddSheet(){document.getElementById('addSheet').classList.remove('open');}
+
+// Override saveSOP to close sheet
+var _origSaveSOP = saveSOP;
+function saveSOP(){
+  var name=document.getElementById('mName').value.trim();
+  var body=document.getElementById('mContent').value.trim();
+  var cat=document.getElementById('mCat').value;
+  var id=document.getElementById('mId').value.trim()||'SOP-'+cat.toUpperCase()+'-'+(sops.length+1);
+  if(!name||!body){showToast('Fill in name and content');return;}
+  sops.push({id:id,name:name,category:cat,content:body});
+  closeAddSheet();
+  ['mName','mContent','mId'].forEach(function(i){document.getElementById(i).value='';});
+  showToast('✓ '+name+' added');
+}
+
+// Toast override — position above bottom bar
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},3000);
+}
+
+// Init — check for saved key
+(function init(){
+  // Ping the proxy server to confirm it's running, then show app
+  fetch('/api/analyze', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      // Any response (even an error from Anthropic) means server is up
+      document.getElementById('apiScreen').style.display='none';
+      document.getElementById('appScreen').style.display='block';
+    })
+    .catch(function(){
+      // Server not running — show the instructions screen
+      var err = document.getElementById('apiError');
+      err.style.display='block';
+      err.textContent='Cannot connect to server.py — please start it first.';
+    });
+})();
+</script>
+</body>
+</html>

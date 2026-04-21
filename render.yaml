@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: sopsearch-vision
+    runtime: python
+    buildCommand: "echo 'No build needed'"
+    startCommand: "python3 server.py"
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
