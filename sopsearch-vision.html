@@ -671,11 +671,7 @@ function stopProgress(ok){
 
 async function runAnalysis(){
   if(!capturedImage) return;
-  if(!getApiKey()){
-    showToast('Please enter your Anthropic API key first');
-    document.getElementById('apiKeyInput').focus();
-    return;
-  }
+  // API key handled server-side
   // Disable both button variants (desktop + mobile)
   var btnA = document.getElementById('analyzeBtn');
   var btnB = document.getElementById('analyzeBtnB');
@@ -1177,20 +1173,9 @@ function showToast(msg){
 
 // Init — check for saved key
 (function init(){
-  // Ping the proxy server to confirm it's running, then show app
-  fetch('/api/analyze', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      // Any response (even an error from Anthropic) means server is up
-      document.getElementById('apiScreen').style.display='none';
-      document.getElementById('appScreen').style.display='block';
-    })
-    .catch(function(){
-      // Server not running — show the instructions screen
-      var err = document.getElementById('apiError');
-      err.style.display='block';
-      err.textContent='Cannot connect to server.py — please start it first.';
-    });
+  // Server handles API key — go straight to app
+  document.getElementById('apiScreen').style.display='none';
+  document.getElementById('appScreen').style.display='block';
 })();
 </script>
 </body>
