@@ -510,15 +510,31 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
   <div class="hdr-pill">Field Intelligence</div>
 </header>
 
-<!-- CONNECTION CHECK SCREEN -->
+<!-- LOGIN SCREEN -->
 <div id="apiScreen" class="body">
   <div id="apiCard" class="api-card" style="margin:40px auto 0">
-    <h2>Meridian</h2>
-    <p>Checking connection to Meridian server...</p>
-    <div id="apiError" class="api-error" style="display:none"></div>
-    <div id="serverStatus" style="font-size:13px;line-height:1.9;color:rgba(255,255,255,.5);margin-top:16px">
-      If this screen stays open, make sure <strong style="color:var(--accent)">server.py</strong> is running:<br>
-      <code style="background:var(--surface2);padding:6px 10px;border-radius:6px;display:inline-block;margin-top:8px;font-size:12px">python3 server.py</code>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--accent3),var(--accent2));border-radius:9px;display:grid;place-items:center">
+        <svg width="20" height="20" viewBox="0 0 44 44" fill="none">
+          <circle cx="22" cy="22" r="21.5" stroke="#0a0d15" stroke-width="1.6" fill="none"/>
+          <path d="M22 4 L25.5 21 L22 24.5 L18.5 21 Z" fill="#0a0d15"/>
+          <path d="M22 40 L25.5 23 L22 24.5 L18.5 23 Z" fill="#0a0d15" opacity=".28"/>
+          <path d="M4 22 L21 25.5 L19.5 22 L21 18.5 Z" fill="#0a0d15"/>
+          <circle cx="22" cy="22" r="3" fill="#0a0d15"/>
+        </svg>
+      </div>
+      <span style="font-family:Playfair Display,serif;font-size:18px;font-weight:800;letter-spacing:.1em">Meridian</span>
+    </div>
+    <h2 style="font-family:Playfair Display,serif;font-size:20px;font-weight:700;margin-bottom:6px">Sign In</h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:22px;line-height:1.6">Enter your company credentials to access the field tool</p>
+    <div class="field"><label style="display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Email</label>
+      <input id="loginEmail" type="email" placeholder="you@company.com" class="api-input" autocomplete="email"></div>
+    <div class="field" style="margin-top:12px"><label style="display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Password</label>
+      <input id="loginPassword" type="password" placeholder="••••••••" class="api-input" autocomplete="current-password"></div>
+    <div id="apiError" class="api-error" style="display:none;margin-top:8px;font-size:12px;color:var(--warn)"></div>
+    <button class="btn-big" onclick="doLogin()" style="margin-top:16px">Sign In</button>
+    <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--muted)">
+      Management? <a href="/dashboard" style="color:var(--accent2)">Go to dashboard</a>
     </div>
   </div>
 </div>
@@ -1059,6 +1075,7 @@ function renderResults(){
 
   // Show results — use both property and class to be safe
   var resultsEl=document.getElementById('results');
+  saveAnalysisToServer(r);
   resultsEl.style.display='block';
   resultsEl.classList.add('visible');
 
@@ -1099,6 +1116,7 @@ function saveSOP(){
   var name=document.getElementById('mName').value.trim(),body=document.getElementById('mContent').value.trim(),cat=document.getElementById('mCat').value,id=document.getElementById('mId').value.trim()||'SOP-'+cat.toUpperCase()+'-'+(sops.length+1);
   if(!name||!body){showToast('Fill in name and content');return;}
   sops.push({id:id,name:name,category:cat,content:body});
+  saveSops();
   // drawer handled by mobile override
   ['mName','mContent','mId'].forEach(function(i){document.getElementById(i).value='';});
   showToast('Added: '+name);
@@ -1152,6 +1170,7 @@ function deleteSop(idx) {
   if (sop && sop.id === 'SOP-MAINT-001') { showToast('Cannot delete primary SOP'); return; }
   var name = sops[idx].name;
   sops.splice(idx, 1);
+  saveSops();
   renderAdminList();
   showToast('Deleted: ' + name);
 }
@@ -1177,6 +1196,7 @@ function saveEdit() {
   sops[editingIdx].category = document.getElementById('editCat').value;
   sops[editingIdx].id       = document.getElementById('editId').value.trim();
   sops[editingIdx].content  = document.getElementById('editContent').value.trim();
+  saveSops();
   closeEditOverlay();
   renderAdminList();
   showToast('SOP updated');
@@ -1248,6 +1268,7 @@ async function processSopFile(file) {
     var idMatch = text.match(/[A-Z]{2,5}-[A-Z]{2,6}-\d{3,4}/);
     var sopId = idMatch ? idMatch[0] : 'SOP-' + cat.toUpperCase() + '-' + ('00' + (sops.length+1)).slice(-3);
     sops.push({id:sopId, name:sopName, category:cat, content:text.trim(), imported:true, source:name});
+    saveSops();
     setProcBar(100, 'Done!');
     setTimeout(function(){
       setProcBar(-1,'');
@@ -1306,6 +1327,39 @@ document.addEventListener('DOMContentLoaded', function() {
   if (dt) dt.addEventListener('input', updateAnalyzeBtn);
 });
 
+// ── SOP PERSISTENCE ──────────────────────────────────────────────────────────
+var BUILTIN_IDS = ['SOP-MAINT-001','SOP-SAF-001','SOP-MNT-012','SOP-OPS-033','SOP-QA-019','SOP-SAF-008','SOP-MNT-031'];
+
+function saveSops() {
+  // Only save user-added SOPs (not the built-ins)
+  var userSops = sops.filter(function(s) {
+    return BUILTIN_IDS.indexOf(s.id) === -1;
+  });
+  try {
+    localStorage.setItem('meridian_user_sops', JSON.stringify(userSops));
+  } catch(e) {
+    console.warn('Could not save SOPs to localStorage:', e);
+  }
+}
+
+function loadSops() {
+  try {
+    var saved = localStorage.getItem('meridian_user_sops');
+    if (!saved) return;
+    var userSops = JSON.parse(saved);
+    if (!Array.isArray(userSops)) return;
+    // Add saved SOPs that aren't already in the list
+    userSops.forEach(function(s) {
+      var exists = sops.some(function(existing) { return existing.id === s.id; });
+      if (!exists) sops.push(s);
+    });
+    console.log('Loaded', userSops.length, 'saved SOPs from storage');
+  } catch(e) {
+    console.warn('Could not load SOPs from localStorage:', e);
+  }
+}
+
+loadSops();
 renderSopBar();
 
 // ── MOBILE UI OVERRIDES ───────────────────────────────────────────────────────
@@ -1577,6 +1631,7 @@ function saveSOP(){
   var id=document.getElementById('mId').value.trim()||'SOP-'+cat.toUpperCase()+'-'+(sops.length+1);
   if(!name||!body){showToast('Fill in name and content');return;}
   sops.push({id:id,name:name,category:cat,content:body});
+  saveSops();
   closeAddSheet();
   ['mName','mContent','mId'].forEach(function(i){document.getElementById(i).value='';});
   showToast('✓ '+name+' added');
@@ -1590,10 +1645,117 @@ function showToast(msg){
 }
 
 // Init — check for saved key
+// ── AUTH & SERVER INTEGRATION ────────────────────────────────────────────────
+var meridianSession = null;
+
+function doLogin() {
+  var email = document.getElementById('loginEmail').value.trim();
+  var pass  = document.getElementById('loginPassword').value;
+  var err   = document.getElementById('apiError');
+  err.style.display = 'none';
+
+  fetch('/api/login', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({email: email, password: pass})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if (data.error) {
+      err.textContent = data.error;
+      err.style.display = 'block';
+      return;
+    }
+    meridianSession = data;
+    sessionStorage.setItem('meridian_session', JSON.stringify(data));
+    launchApp();
+  })
+  .catch(function(){
+    err.textContent = 'Cannot reach server — check connection';
+    err.style.display = 'block';
+  });
+}
+
+function launchApp() {
+  document.getElementById('apiScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  loadSopsFromServer();
+}
+
+function loadSopsFromServer() {
+  if (!meridianSession) return;
+  fetch('/api/sops', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json',
+              'Authorization': 'Bearer ' + meridianSession.token},
+    body: '{}'
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if (data.sops && data.sops.length > 0) {
+      // Replace sops array with company sops from database
+      // Keep the built-in SOP-MAINT-001 if no server SOPs exist
+      var serverSops = data.sops.map(function(s) {
+        return {
+          id:       s.sop_id || s.id,
+          name:     s.name,
+          category: s.category || 'ops',
+          content:  s.content || '',
+          version:  s.version || '',
+          imported: true,
+          source:   s.source || ''
+        };
+      });
+      // Merge: server SOPs first, then local built-ins not already present
+      var serverIds = serverSops.map(function(s){ return s.id; });
+      var localOnly = sops.filter(function(s){ return serverIds.indexOf(s.id) === -1; });
+      sops = serverSops.concat(localOnly);
+      renderSopBar();
+      showToast('Loaded ' + serverSops.length + ' SOPs from library');
+    }
+  })
+  .catch(function(e){ console.warn('Could not load SOPs from server:', e); });
+}
+
+function saveAnalysisToServer(result) {
+  if (!meridianSession) return;
+  fetch('/api/analyses/save', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json',
+              'Authorization': 'Bearer ' + meridianSession.token},
+    body: JSON.stringify(result)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if (data.analysis_id) {
+      console.log('Analysis saved:', data.analysis_id);
+      if (result.severity === 'HIGH') {
+        showToast('HIGH severity alert sent to management');
+      }
+    }
+  })
+  .catch(function(e){ console.warn('Could not save analysis:', e); });
+}
+
+// Allow Enter key on login
+document.addEventListener('DOMContentLoaded', function() {
+  var pw = document.getElementById('loginPassword');
+  if (pw) pw.addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
+  var em = document.getElementById('loginEmail');
+  if (em) em.addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('loginPassword').focus(); });
+});
+
 (function init(){
-  // Server handles API key — go straight to app
-  document.getElementById('apiScreen').style.display='none';
-  document.getElementById('appScreen').style.display='block';
+  var saved = sessionStorage.getItem('meridian_session');
+  if (saved) {
+    meridianSession = JSON.parse(saved);
+    if (meridianSession && meridianSession.token) {
+      launchApp();
+      return;
+    }
+  }
+  // Show login screen
+  document.getElementById('apiScreen').style.display = 'flex';
 })();
 </script>
 

@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian — Management Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0d15;--surface:#05172f;--surface2:#182A3A;--surface3:#2d3c4c;
+  --border:rgba(194,160,114,.15);--border2:rgba(194,160,114,.25);
+  --accent:#C2A072;--accent2:#D6BB80;--accent3:#A08348;
+  --warn:#c87c50;--ok:#7aab6e;--gold:#d4ac50;
+  --text:#e8dfc8;--muted:#787C83;
+}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;min-height:100vh}
+a{color:inherit;text-decoration:none}
+
+/* ── LOGIN ── */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.login-card{background:var(--surface);border:1px solid var(--border2);border-top:3px solid var(--accent);border-radius:14px;padding:36px 32px;width:100%;max-width:400px}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+.login-badge{width:36px;height:36px;background:linear-gradient(135deg,var(--accent3),var(--accent2));border-radius:9px;display:grid;place-items:center}
+.login-brand{font-family:'Playfair Display',serif;font-size:18px;font-weight:800;letter-spacing:.1em}
+.login-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:6px}
+.login-sub{font-size:12px;color:var(--muted);margin-bottom:24px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:12px 14px;border-radius:8px;outline:none;transition:border-color .2s}
+.field input:focus{border-color:var(--accent)}
+.btn-login{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent3),var(--accent2));color:#0a0d15;border:none;border-radius:8px;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.04em;margin-top:4px}
+.login-error{font-size:12px;color:var(--warn);margin-top:10px;display:none}
+.login-note{font-size:11px;color:var(--muted);text-align:center;margin-top:16px}
+
+/* ── APP LAYOUT ── */
+#appScreen{display:none;min-height:100vh;grid-template-columns:220px 1fr;grid-template-rows:auto 1fr}
+#appScreen.visible{display:grid}
+
+/* Topbar */
+.topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.top-logo{display:flex;align-items:center;gap:10px;font-family:'Playfair Display',serif;font-size:17px;font-weight:800;letter-spacing:.1em}
+.top-badge{width:32px;height:32px;background:linear-gradient(135deg,var(--accent3),var(--accent2));border-radius:8px;display:grid;place-items:center;box-shadow:0 2px 10px rgba(160,131,72,.35)}
+.top-right{display:flex;align-items:center;gap:16px}
+.top-user{font-size:12px;color:var(--muted)}
+.top-company{font-size:12px;color:var(--accent2);font-weight:500}
+.btn-logout{font-size:11px;padding:6px 14px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-logout:hover{border-color:var(--warn);color:var(--warn)}
+
+/* Sidebar */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px 0;overflow-y:auto}
+.sb-section{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(194,160,114,.4);padding:0 20px 8px;margin-top:12px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:rgba(232,223,200,.5);font-size:12px;border-left:2px solid transparent;transition:all .15s}
+.sb-item:hover{background:rgba(194,160,114,.05);color:var(--text)}
+.sb-item.active{background:rgba(194,160,114,.08);color:var(--accent);border-left-color:var(--accent)}
+.sb-badge{background:rgba(200,124,80,.2);color:var(--warn);font-size:9px;padding:2px 6px;border-radius:10px;margin-left:auto}
+
+/* Main content */
+.main{overflow-y:auto;padding:24px}
+
+/* Pages */
+.page{display:none}
+.page.active{display:block}
+
+/* Metrics */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.metric-label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.metric-value{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;line-height:1;margin-bottom:4px}
+.metric-sub{font-size:11px;color:rgba(232,223,200,.4)}
+.v-high{color:var(--warn)}
+.v-ok{color:var(--ok)}
+.v-gold{color:var(--accent2)}
+.v-text{color:var(--text)}
+
+/* Alert banners */
+.alerts-section{margin-bottom:20px}
+.alert-banner{background:rgba(200,124,80,.1);border:1px solid rgba(200,124,80,.3);border-left:3px solid var(--warn);border-radius:10px;padding:14px 18px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start}
+.ab-body{flex:1}
+.ab-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.ab-desc{font-size:11px;color:rgba(232,223,200,.5);line-height:1.6}
+.ab-time{font-size:10px;color:rgba(200,124,80,.6);white-space:nowrap}
+.btn-dismiss{font-size:10px;padding:4px 10px;background:rgba(232,223,200,.08);border:1px solid rgba(232,223,200,.15);color:rgba(232,223,200,.5);border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px;transition:all .15s}
+.btn-dismiss:hover{border-color:var(--warn);color:var(--warn)}
+
+/* Activity feed */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.panel-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;letter-spacing:.04em}
+.activity-item{display:flex;gap:14px;padding:14px 18px;border-bottom:1px solid rgba(194,160,114,.06);transition:background .15s;cursor:pointer}
+.activity-item:hover{background:rgba(194,160,114,.04)}
+.activity-item:last-child{border-bottom:none}
+.ai-sev{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;flex-shrink:0;font-size:13px}
+.sev-h{background:rgba(200,124,80,.2)}
+.sev-m{background:rgba(212,172,80,.15)}
+.sev-l{background:rgba(122,171,110,.15)}
+.ai-body{flex:1;min-width:0}
+.ai-title{font-size:13px;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-meta{font-size:10px;color:rgba(232,223,200,.4);display:flex;gap:10px;flex-wrap:wrap}
+.ai-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.ai-time{font-size:10px;color:rgba(232,223,200,.3)}
+.sev-pill{font-size:9px;padding:2px 8px;border-radius:10px;letter-spacing:.08em;text-transform:uppercase}
+.sev-pill.h{background:rgba(200,124,80,.2);color:var(--warn)}
+.sev-pill.m{background:rgba(212,172,80,.15);color:var(--gold)}
+.sev-pill.l{background:rgba(122,171,110,.15);color:var(--ok)}
+.ai-progress{font-size:10px;color:var(--ok)}
+
+/* Team page */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.team-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;gap:14px;align-items:flex-start}
+.tc-avatar{width:40px;height:40px;border-radius:50%;background:rgba(194,160,114,.15);border:1px solid var(--border2);display:grid;place-items:center;font-size:14px;font-weight:600;color:var(--accent2);flex-shrink:0}
+.tc-body{flex:1}
+.tc-name{font-size:14px;font-weight:500;margin-bottom:3px}
+.tc-email{font-size:11px;color:var(--muted);margin-bottom:6px}
+.tc-role{font-size:9px;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.1em;display:inline-block}
+.role-admin{background:rgba(194,160,114,.15);color:var(--accent2)}
+.role-manager{background:rgba(122,171,110,.15);color:var(--ok)}
+.role-worker{background:rgba(90,112,128,.2);color:var(--muted)}
+
+/* Invite form */
+.invite-form{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.invite-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;margin-bottom:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end}
+.form-field label{display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.form-field input,.form-field select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:10px 12px;border-radius:8px;outline:none}
+.form-field input:focus,.form-field select:focus{border-color:var(--accent)}
+.btn-invite{padding:10px 20px;background:linear-gradient(135deg,var(--accent3),var(--accent2));color:#0a0d15;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;letter-spacing:.04em}
+
+/* SOP page */
+.sop-list{display:flex;flex-direction:column;gap:10px}
+.sop-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;gap:14px;align-items:flex-start}
+.sop-cat{font-size:9px;text-transform:uppercase;letter-spacing:.1em;padding:3px 8px;border-radius:10px;flex-shrink:0;margin-top:2px}
+.cat-maint{background:rgba(136,153,187,.15);color:#8899bb}
+.cat-safety{background:rgba(200,124,80,.15);color:var(--warn)}
+.cat-quality{background:rgba(212,172,80,.15);color:var(--gold)}
+.cat-ops{background:rgba(194,160,114,.15);color:var(--accent)}
+.sop-body{flex:1;min-width:0}
+.sop-name{font-size:13px;font-weight:500;margin-bottom:3px}
+.sop-meta{font-size:10px;color:var(--muted);display:flex;gap:10px;margin-bottom:6px}
+.sop-preview{font-size:11px;color:rgba(232,223,200,.35);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sop-actions{display:flex;gap:6px;flex-direction:column}
+.sop-btn{font-size:10px;padding:5px 12px;border-radius:6px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .15s}
+.sop-btn-del{background:rgba(200,124,80,.1);color:var(--warn);border:1px solid rgba(200,124,80,.2)}
+.sop-btn-del:hover{background:rgba(200,124,80,.2)}
+
+/* Upload area */
+.upload-area{background:var(--surface);border:2px dashed rgba(194,160,114,.3);border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:16px}
+.upload-area:hover{border-color:var(--accent);background:rgba(194,160,114,.04)}
+.upload-area h3{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--accent2);margin-bottom:6px}
+.upload-area p{font-size:12px;color:var(--muted)}
+
+/* Empty state */
+.empty{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty-icon{font-size:36px;margin-bottom:12px;opacity:.4}
+.empty h3{font-family:'Playfair Display',serif;font-size:16px;margin-bottom:6px;color:rgba(232,223,200,.5)}
+.empty p{font-size:12px;line-height:1.7}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:10px 20px;font-size:12px;border-radius:20px;transition:transform .25s;z-index:200;white-space:nowrap;opacity:0}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+@media(max-width:900px){
+  #appScreen.visible{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .metrics{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-badge">
+        <svg width="20" height="20" viewBox="0 0 44 44" fill="none">
+          <circle cx="22" cy="22" r="21.5" stroke="#0a0d15" stroke-width="1.6" fill="none"/>
+          <path d="M22 4 L25.5 21 L22 24.5 L18.5 21 Z" fill="#0a0d15"/>
+          <path d="M22 40 L25.5 23 L22 24.5 L18.5 23 Z" fill="#0a0d15" opacity=".28"/>
+          <path d="M4 22 L21 25.5 L19.5 22 L21 18.5 Z" fill="#0a0d15"/>
+          <circle cx="22" cy="22" r="3" fill="#0a0d15"/>
+        </svg>
+      </div>
+      <div class="login-brand">Meridian</div>
+    </div>
+    <div class="login-title">Management Dashboard</div>
+    <div class="login-sub">Sign in with your manager or admin account</div>
+    <div class="field"><label>Email</label><input id="loginEmail" type="email" placeholder="you@company.com" autocomplete="email"></div>
+    <div class="field"><label>Password</label><input id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn-login" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-note">Field workers use the main app · <a href="/" style="color:var(--accent2)">Go to field app</a></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appScreen">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="top-logo">
+      <div class="top-badge">
+        <svg width="18" height="18" viewBox="0 0 44 44" fill="none">
+          <circle cx="22" cy="22" r="21.5" stroke="#0a0d15" stroke-width="1.6" fill="none"/>
+          <path d="M22 4 L25.5 21 L22 24.5 L18.5 21 Z" fill="#0a0d15"/>
+          <path d="M22 40 L25.5 23 L22 24.5 L18.5 23 Z" fill="#0a0d15" opacity=".28"/>
+          <path d="M4 22 L21 25.5 L19.5 22 L21 18.5 Z" fill="#0a0d15"/>
+          <circle cx="22" cy="22" r="3" fill="#0a0d15"/>
+        </svg>
+      </div>
+      Meridian
+    </div>
+    <div class="top-right">
+      <span class="top-company" id="topCompany"></span>
+      <span class="top-user" id="topUser"></span>
+      <button class="btn-logout" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sb-section">Overview</div>
+    <div class="sb-item active" onclick="showPage('dashboard',this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+      <span class="sb-badge" id="alertBadge" style="display:none">0</span>
+    </div>
+    <div class="sb-item" onclick="showPage('activity',this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      All Activity
+    </div>
+    <div class="sb-section">Manage</div>
+    <div class="sb-item" onclick="showPage('sops',this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      SOP Library
+    </div>
+    <div class="sb-item" onclick="showPage('team',this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Team
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- DASHBOARD PAGE -->
+    <div class="page active" id="page-dashboard">
+      <div class="metrics" id="metricsRow">
+        <div class="metric"><div class="metric-label">Total analyses</div><div class="metric-value v-text" id="mTotal">—</div><div class="metric-sub">All time</div></div>
+        <div class="metric"><div class="metric-label">High severity</div><div class="metric-value v-high" id="mHigh">—</div><div class="metric-sub">Require action</div></div>
+        <div class="metric"><div class="metric-label">Medium</div><div class="metric-value v-gold" id="mMed">—</div><div class="metric-sub">Monitor closely</div></div>
+        <div class="metric"><div class="metric-label">Low / resolved</div><div class="metric-value v-ok" id="mLow">—</div><div class="metric-sub">On track</div></div>
+      </div>
+
+      <div class="alerts-section" id="alertsSection"></div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Recent Field Activity</div>
+          <span style="font-size:10px;color:var(--muted)">Last 50 analyses</span>
+        </div>
+        <div id="activityFeed"><div class="empty"><div class="empty-icon">📋</div><h3>No activity yet</h3><p>Analyses from field workers will appear here.</p></div></div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY PAGE -->
+    <div class="page" id="page-activity">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">All Field Activity</div></div>
+        <div id="activityFeedFull"><div class="empty"><div class="empty-icon">📋</div><h3>No activity yet</h3></div></div>
+      </div>
+    </div>
+
+    <!-- SOPs PAGE -->
+    <div class="page" id="page-sops">
+      <div class="upload-area" onclick="document.getElementById('sopUpload').click()">
+        <h3>Upload SOP or Work Instruction</h3>
+        <p>Click to upload a DOCX or TXT file — extracted automatically and added to your company library</p>
+        <input type="file" id="sopUpload" accept=".docx,.txt" style="display:none" onchange="uploadSop(event)">
+      </div>
+      <div class="sop-list" id="sopListEl"><div class="empty"><div class="empty-icon">📄</div><h3>No SOPs yet</h3><p>Upload your first SOP above.</p></div></div>
+    </div>
+
+    <!-- TEAM PAGE -->
+    <div class="page" id="page-team">
+      <div class="invite-form">
+        <div class="invite-title">Invite Team Member</div>
+        <div class="form-row">
+          <div class="form-field"><label>Full Name</label><input id="inviteName" placeholder="Jane Smith"></div>
+          <div class="form-field"><label>Email</label><input id="inviteEmail" placeholder="jane@company.com" type="email"></div>
+          <div class="form-field"><label>Role</label>
+            <select id="inviteRole">
+              <option value="worker">Field Worker</option>
+              <option value="manager">Manager</option>
+            </select>
+          </div>
+          <button class="btn-invite" onclick="inviteMember()">Send Invite</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:10px">New members receive a temporary password: <strong>ChangeMe123!</strong> — ask them to change it on first login.</div>
+      </div>
+      <div class="team-grid" id="teamGrid"><div class="empty"><div class="empty-icon">👥</div><h3>No team members yet</h3></div></div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /appScreen -->
+
+<div class="toast" id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+<script>
+var session = null;
+var dashData = null;
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+function doLogin() {
+  var email = document.getElementById('loginEmail').value.trim();
+  var pass  = document.getElementById('loginPassword').value;
+  var errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+
+  fetch('/api/login', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({email: email, password: pass})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if (data.error) {
+      errEl.textContent = data.error;
+      errEl.style.display = 'block';
+      return;
+    }
+    if (data.role === 'worker') {
+      errEl.textContent = 'This account does not have dashboard access. Use the field app.';
+      errEl.style.display = 'block';
+      return;
+    }
+    session = data;
+    sessionStorage.setItem('meridian_session', JSON.stringify(data));
+    showApp();
+  })
+  .catch(function(){ errEl.textContent = 'Connection error'; errEl.style.display='block'; });
+}
+
+function doLogout() {
+  sessionStorage.removeItem('meridian_session');
+  session = null;
+  document.getElementById('appScreen').classList.remove('visible');
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').classList.add('visible');
+  document.getElementById('topCompany').textContent = (session.company && session.company.name) || '';
+  document.getElementById('topUser').textContent    = session.full_name || session.email;
+  loadDashboard();
+  loadSops();
+  loadTeam();
+  // Auto-refresh alerts every 30s
+  setInterval(loadDashboard, 30000);
+}
+
+// Enter key on login
+document.getElementById('loginPassword').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') doLogin();
+});
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.sb-item').forEach(function(i){ i.classList.remove('active'); });
+  document.getElementById('page-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function loadDashboard() {
+  if (!session) return;
+  fetch('/api/dashboard', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
+    body: '{}'
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    dashData = data;
+    var c = data.counts || {};
+    document.getElementById('mTotal').textContent = c.total || 0;
+    document.getElementById('mHigh').textContent  = c.high  || 0;
+    document.getElementById('mMed').textContent   = c.medium|| 0;
+    document.getElementById('mLow').textContent   = c.low   || 0;
+
+    // Alert badge
+    var alerts = data.alerts || [];
+    var badge  = document.getElementById('alertBadge');
+    if (alerts.length > 0) {
+      badge.textContent  = alerts.length;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+
+    // Alert banners
+    var sec = document.getElementById('alertsSection');
+    sec.innerHTML = '';
+    alerts.forEach(function(a) {
+      var div = document.createElement('div');
+      div.className = 'alert-banner';
+      div.innerHTML =
+        '<div style="flex-shrink:0;margin-top:2px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c87c50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>' +
+        '<div class="ab-body"><div class="ab-title">' + (a.message||'High severity issue reported') + '</div>' +
+        '<div class="ab-desc">' + fmtTime(a.sent_at) + '</div>' +
+        '<button class="btn-dismiss" onclick="dismissAlert(\'' + a.id + '\',this.parentNode.parentNode)">Dismiss</button></div>' +
+        '<div class="ab-time">' + fmtTimeShort(a.sent_at) + '</div>';
+      sec.appendChild(div);
+    });
+
+    // Activity feed
+    renderFeed(data.analyses || [], 'activityFeed');
+    renderFeed(data.analyses || [], 'activityFeedFull');
+  })
+  .catch(function(e){ console.error('Dashboard error:', e); });
+}
+
+function renderFeed(analyses, elId) {
+  var el = document.getElementById(elId);
+  if (!analyses.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><h3>No activity yet</h3><p>Analyses from field workers will appear here.</p></div>';
+    return;
+  }
+  el.innerHTML = '';
+  analyses.forEach(function(a) {
+    var sev    = (a.severity||'LOW').toUpperCase();
+    var sevKey = sev==='HIGH'?'h':sev==='MEDIUM'?'m':'l';
+    var sevIcon = sev==='HIGH'
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c87c50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>'
+      : sev==='MEDIUM'
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4ac50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7aab6e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+    var worker = a.users && a.users.full_name ? a.users.full_name : 'Unknown worker';
+    var div = document.createElement('div');
+    div.className = 'activity-item';
+    div.innerHTML =
+      '<div class="ai-sev sev-' + sevKey + '">' + sevIcon + '</div>' +
+      '<div class="ai-body"><div class="ai-title">' + (a.issue_title||'Issue') + '</div>' +
+      '<div class="ai-meta"><span>' + worker + '</span><span>' + fmtTime(a.created_at) + '</span></div></div>' +
+      '<div class="ai-right"><span class="sev-pill ' + sevKey + '">' + sev + '</span></div>';
+    el.appendChild(div);
+  });
+}
+
+function dismissAlert(id, el) {
+  fetch('/api/alerts/dismiss', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
+    body: JSON.stringify({id: id})
+  }).then(function(){ el.remove(); });
+}
+
+// ── SOPs ──────────────────────────────────────────────────────────────────────
+function loadSops() {
+  if (!session) return;
+  fetch('/api/sops', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
+    body: '{}'
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) { renderSops(data.sops || []); })
+  .catch(function(){});
+}
+
+function renderSops(sops) {
+  var el = document.getElementById('sopListEl');
+  if (!sops.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📄</div><h3>No SOPs yet</h3><p>Upload your first SOP above.</p></div>';
+    return;
+  }
+  el.innerHTML = '';
+  var catLabels = {maint:'Maintenance',safety:'Safety',ops:'Operations',quality:'Quality'};
+  sops.forEach(function(sop) {
+    var div = document.createElement('div');
+    div.className = 'sop-card';
+    div.innerHTML =
+      '<span class="sop-cat cat-' + (sop.category||'ops') + '">' + (catLabels[sop.category]||sop.category) + '</span>' +
+      '<div class="sop-body">' +
+        '<div class="sop-name">' + sop.name + '</div>' +
+        '<div class="sop-meta"><span>' + (sop.sop_id||sop.id.substring(0,8)) + '</span>' +
+        (sop.version?'<span>v'+sop.version+'</span>':'') + '</div>' +
+        '<div class="sop-preview">' + (sop.content||'').substring(0,150) + '...</div>' +
+      '</div>' +
+      '<div class="sop-actions"><button class="sop-btn sop-btn-del" onclick="deleteSop(\'' + sop.id + '\',this)">Delete</button></div>';
+    el.appendChild(div);
+  });
+}
+
+function deleteSop(id, btn) {
+  if (!confirm('Delete this SOP?')) return;
+  fetch('/api/sops/delete', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
+    body: JSON.stringify({id: id})
+  })
+  .then(function(){ btn.closest('.sop-card').remove(); showToast('SOP deleted'); })
+  .catch(function(){ showToast('Error deleting SOP'); });
+}
+
+async function uploadSop(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+  showToast('Extracting text...');
+  var text = '';
+  var ext  = file.name.split('.').pop().toLowerCase();
+  try {
+    if (ext === 'txt') {
+      text = await new Promise(function(res,rej){var r=new FileReader();r.onload=function(e){res(e.target.result);};r.onerror=rej;r.readAsText(file);});
+    } else if (ext === 'docx' && typeof mammoth !== 'undefined') {
+      var buf = await new Promise(function(res,rej){var r=new FileReader();r.onload=function(e){res(e.target.result);};r.onerror=rej;r.readAsArrayBuffer(file);});
+      var result = await mammoth.extractRawText({arrayBuffer: buf});
+      text = result.value;
+    } else {
+      showToast('Use DOCX or TXT format'); return;
+    }
+    if (!text.trim()) { showToast('No text found in file'); return; }
+    var name = file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
+    name = name.replace(/\b\w/g,function(c){return c.toUpperCase();});
+    var lower = text.toLowerCase();
+    var cat   = 'ops';
+    if (lower.indexOf('safety')>-1||lower.indexOf('hazard')>-1) cat='safety';
+    else if (lower.indexOf('maintenance')>-1||lower.indexOf('repair')>-1) cat='maint';
+    else if (lower.indexOf('quality')>-1||lower.indexOf('defect')>-1) cat='quality';
+    var idMatch = text.match(/[A-Z]{2,5}-[A-Z]{2,6}-\d{3,4}/);
+    fetch('/api/sops/add', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
+      body: JSON.stringify({name:name, sop_id:idMatch?idMatch[0]:'', category:cat, content:text.trim(), source:file.name, version:'1.0'})
+    })
+    .then(function(r){return r.json();})
+    .then(function(){showToast('SOP added: '+name);loadSops();})
+    .catch(function(){showToast('Error saving SOP');});
+  } catch(err) {
+    showToast('Error: '+(err.message||String(err)));
+  }
+}
+
+// ── TEAM ──────────────────────────────────────────────────────────────────────
+function loadTeam() {
+  if (!session) return;
+  fetch('/api/team/list', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
+    body: '{}'
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){renderTeam(data.team||[]);})
+  .catch(function(){});
+}
+
+function renderTeam(team) {
+  var el = document.getElementById('teamGrid');
+  if (!team.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><h3>No team members yet</h3></div>';
+    return;
+  }
+  el.innerHTML = '';
+  team.forEach(function(m) {
+    var initials = (m.full_name||'?').split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+    var div = document.createElement('div');
+    div.className = 'team-card';
+    div.innerHTML =
+      '<div class="tc-avatar">' + initials + '</div>' +
+      '<div class="tc-body">' +
+        '<div class="tc-name">' + (m.full_name||'Unknown') + '</div>' +
+        '<div class="tc-email">' + (m.email||'') + '</div>' +
+        '<span class="tc-role role-' + (m.role||'worker') + '">' + (m.role||'worker') + '</span>' +
+      '</div>';
+    el.appendChild(div);
+  });
+}
+
+function inviteMember() {
+  var name  = document.getElementById('inviteName').value.trim();
+  var email = document.getElementById('inviteEmail').value.trim();
+  var role  = document.getElementById('inviteRole').value;
+  if (!name||!email) { showToast('Enter name and email'); return; }
+  fetch('/api/team/invite', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
+    body: JSON.stringify({full_name:name,email:email,role:role})
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if (data.error) { showToast('Error: '+(data.error.message||JSON.stringify(data.error))); return; }
+    showToast('Invited: '+name);
+    document.getElementById('inviteName').value='';
+    document.getElementById('inviteEmail').value='';
+    loadTeam();
+  })
+  .catch(function(){showToast('Error sending invite');});
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function fmtTime(ts) {
+  if (!ts) return '';
+  var d = new Date(ts);
+  var diff = Math.floor((Date.now()-d)/1000);
+  if (diff < 60)   return diff + 's ago';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400)return Math.floor(diff/3600) + 'h ago';
+  return d.toLocaleDateString();
+}
+function fmtTimeShort(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');}, 3000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+(function(){
+  var saved = sessionStorage.getItem('meridian_session');
+  if (saved) {
+    session = JSON.parse(saved);
+    if (session && session.role !== 'worker') {
+      showApp();
+    } else {
+      sessionStorage.removeItem('meridian_session');
+    }
+  }
+})();
+</script>
+</body>
+</html>
