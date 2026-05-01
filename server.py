@@ -157,8 +157,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         auth_user, profile = get_user_from_token(token)
         if not profile:
             self.send_json(401, {"error": "User not found"}); return
+        company_id = profile["company_id"]
+        # Use service key to bypass RLS and reliably fetch all company SOPs
         status, sops = supabase("GET",
-            "/sops?company_id=eq." + profile["company_id"] + "&order=created_at.asc")
+            "/sops?company_id=eq." + company_id + "&order=created_at.asc")
+        print("  GET SOPs for company " + company_id + " -> status " + str(status) + " count " + str(len(sops) if isinstance(sops,list) else 0))
         self.send_json(200, {"sops": sops if status == 200 else []})
 
     def handle_add_sop(self):
@@ -180,6 +183,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             "created_by": auth_user["id"],
         }
         status, data = supabase("POST", "/sops", sop)
+        print("  ADD SOP status:" + str(status) + " data:" + str(data)[:200])
         self.send_json(200 if status in (200, 201) else 500,
             {"sop": data[0] if isinstance(data, list) else data})
 

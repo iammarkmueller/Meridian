@@ -372,6 +372,10 @@ function showPage(name, el) {
   document.querySelectorAll('.sb-item').forEach(function(i){ i.classList.remove('active'); });
   document.getElementById('page-' + name).classList.add('active');
   if (el) el.classList.add('active');
+  // Reload data when switching to a page
+  if (name === 'sops')      loadSops();
+  if (name === 'team')      loadTeam();
+  if (name === 'dashboard') loadDashboard();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
@@ -538,9 +542,15 @@ async function uploadSop(e) {
       body: JSON.stringify({name:name, sop_id:idMatch?idMatch[0]:'', category:cat, content:text.trim(), source:file.name, version:'1.0'})
     })
     .then(function(r){return r.json();})
-    .then(function(){showToast('SOP added: '+name);loadSops();})
+    .then(function(){
+      showToast('SOP added: ' + name);
+      loadSops();
+      // Switch to SOP library page so user sees it
+      showPage('sops', document.querySelector('.sb-item[onclick*="sops"]'));
+    })
     .catch(function(){showToast('Error saving SOP');});
   } catch(err) {
+    console.error('Upload error:', err);
     showToast('Error: '+(err.message||String(err)));
   }
 }

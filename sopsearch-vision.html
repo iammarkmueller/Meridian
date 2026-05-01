@@ -1692,26 +1692,27 @@ function loadSopsFromServer() {
   })
   .then(function(r){ return r.json(); })
   .then(function(data) {
-    if (data.sops && data.sops.length > 0) {
-      // Replace sops array with company sops from database
-      // Keep the built-in SOP-MAINT-001 if no server SOPs exist
-      var serverSops = data.sops.map(function(s) {
-        return {
-          id:       s.sop_id || s.id,
-          name:     s.name,
-          category: s.category || 'ops',
-          content:  s.content || '',
-          version:  s.version || '',
-          imported: true,
-          source:   s.source || ''
-        };
-      });
-      // Merge: server SOPs first, then local built-ins not already present
-      var serverIds = serverSops.map(function(s){ return s.id; });
-      var localOnly = sops.filter(function(s){ return serverIds.indexOf(s.id) === -1; });
-      sops = serverSops.concat(localOnly);
+    // Always replace sops with server data when logged in
+    // Server is the source of truth — ignore local hardcoded array
+    var serverSops = (data.sops || []).map(function(s) {
+      return {
+        id:       s.sop_id || s.id,
+        dbId:     s.id,
+        name:     s.name,
+        category: s.category || 'ops',
+        content:  s.content || '',
+        version:  s.version || '',
+        imported: true,
+        source:   s.source || ''
+      };
+    });
+    if (serverSops.length > 0) {
+      sops = serverSops;
       renderSopBar();
-      showToast('Loaded ' + serverSops.length + ' SOPs from library');
+      showToast('Loaded ' + serverSops.length + ' SOP' + (serverSops.length===1?'':'s') + ' from library');
+    } else {
+      // No company SOPs yet — keep built-ins and show message
+      showToast('No SOPs in library yet — add them via the dashboard');
     }
   })
   .catch(function(e){ console.warn('Could not load SOPs from server:', e); });
