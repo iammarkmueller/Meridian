@@ -323,8 +323,12 @@ function doLogin() {
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({email: email, password: pass})
   })
-  .then(function(r){ return r.json(); })
+  .then(function(r){
+    console.log('Login response status:', r.status);
+    return r.json();
+  })
   .then(function(data) {
+    console.log('Login data:', JSON.stringify(data).substring(0,200));
     if (data.error) {
       errEl.textContent = data.error;
       errEl.style.display = 'block';
@@ -381,6 +385,7 @@ function showPage(name, el) {
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
 function loadDashboard() {
   if (!session) return;
+  console.log('Loading dashboard, token:', session.token ? 'present' : 'MISSING');
   fetch('/api/dashboard', {
     method: 'POST',
     headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
@@ -470,9 +475,15 @@ function loadSops() {
     headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
     body: '{}'
   })
-  .then(function(r){ return r.json(); })
-  .then(function(data) { renderSops(data.sops || []); })
-  .catch(function(){});
+  .then(function(r){
+    console.log('GET SOPs status:', r.status);
+    return r.json();
+  })
+  .then(function(data) {
+    console.log('SOPs received:', data);
+    renderSops(data.sops || []);
+  })
+  .catch(function(e){ console.error('loadSops error:', e); showToast('Error loading SOPs: ' + e.message); });
 }
 
 function renderSops(sops) {
@@ -536,18 +547,24 @@ async function uploadSop(e) {
     else if (lower.indexOf('maintenance')>-1||lower.indexOf('repair')>-1) cat='maint';
     else if (lower.indexOf('quality')>-1||lower.indexOf('defect')>-1) cat='quality';
     var idMatch = text.match(/[A-Z]{2,5}-[A-Z]{2,6}-\d{3,4}/);
+    console.log('Uploading SOP to server:', name, '| token:', session.token ? 'present':'MISSING');
     fetch('/api/sops/add', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
       body: JSON.stringify({name:name, sop_id:idMatch?idMatch[0]:'', category:cat, content:text.trim(), source:file.name, version:'1.0'})
     })
-    .then(function(r){return r.json();})
-    .then(function(){
+    .then(function(r){
+      console.log('Add SOP HTTP status:', r.status);
+      return r.json();
+    })
+    .then(function(data){
+      console.log('Add SOP response:', JSON.stringify(data).substring(0,300));
+      if (data.error) { showToast('Server error: '+JSON.stringify(data.error)); return; }
       showToast('SOP added: ' + name);
-      loadSops();
-      // Switch to SOP library page so user sees it
+      setTimeout(function(){ loadSops(); }, 800);
       showPage('sops', document.querySelector('.sb-item[onclick*="sops"]'));
     })
+    .catch(function(e){ console.error('Fetch error:', e); showToast('Network error: '+e.message); })
     .catch(function(){showToast('Error saving SOP');});
   } catch(err) {
     console.error('Upload error:', err);
