@@ -66,12 +66,14 @@ def get_user_from_token(token):
     try:
         with urllib.request.urlopen(req, timeout=10) as r:
             auth_user = json.loads(r.read())
+        # Use service key (not user token) to bypass RLS for profile lookup
         status, rows = supabase("GET",
-            "/users?id=eq." + auth_user["id"] + "&select=*,companies(name,plan)",
-            token=token)
-        profile = rows[0] if status == 200 and rows else None
+            "/users?id=eq." + auth_user["id"] + "&select=*,companies(name,plan)")
+        print("  get_user_from_token: status=" + str(status) + " rows=" + str(len(rows) if isinstance(rows,list) else rows))
+        profile = rows[0] if status == 200 and isinstance(rows,list) and rows else None
         return auth_user, profile
-    except Exception:
+    except Exception as ex:
+        print("  get_user_from_token error:", ex)
         return None, None
 
 

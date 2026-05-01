@@ -703,22 +703,30 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
 
   <!-- Progress -->
   <!-- Persistent manage procedures link -->
-  <div style="text-align:center;padding:4px 0 8px">
+  <div style="text-align:center;padding:4px 0 8px;display:flex;gap:10px;justify-content:center;padding:8px 16px">
+    <button onclick="openIssues()" style="
+      flex:1;background:var(--surface);border:1px solid rgba(194,160,114,.2);
+      color:rgba(194,160,114,.8);font-family:'DM Sans',sans-serif;
+      font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+      padding:10px 16px;border-radius:10px;transition:all .2s;display:flex;
+      align-items:center;justify-content:center;gap:8px;
+    ">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+      </svg>
+      My Issues
+    </button>
     <button onclick="openAdmin()" style="
-      background:transparent;border:none;
-      color:rgba(194,160,114,.55);
-      font-family:'DM Sans',sans-serif;
-      font-size:11px;letter-spacing:.12em;
-      text-transform:uppercase;cursor:pointer;
-      padding:8px 20px;
-      border-bottom:1px solid rgba(194,160,114,.2);
-      transition:color .2s;
-    " onmouseover="this.style.color='rgba(194,160,114,1)'"
-       onmouseout="this.style.color='rgba(194,160,114,.55)'">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:6px">
+      background:var(--surface);border:1px solid rgba(194,160,114,.15);
+      color:rgba(194,160,114,.5);font-family:'DM Sans',sans-serif;
+      font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+      padding:10px 16px;border-radius:10px;transition:all .2s;display:flex;
+      align-items:center;justify-content:center;gap:8px;
+    ">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
       </svg>
-      Manage Procedures
+      Procedures
     </button>
   </div>
 
@@ -1597,6 +1605,23 @@ function toggleCheckMobile(idx) {
   }
   var done = checkItems.filter(function(c){return c.done;}).length;
   document.getElementById('doneCount').textContent = done;
+  // Update complete button
+  var allDone = checkItems.length > 0 && checkItems.every(function(c){ return c.done; });
+  var btn = document.getElementById('completeBtn');
+  if (btn) btn.disabled = !allDone;
+  // Save to server
+  if (currentAnalysisId && meridianSession) {
+    fetch('/api/checklist/update', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json',
+                'Authorization': 'Bearer ' + meridianSession.token},
+      body: JSON.stringify({
+        analysis_id: currentAnalysisId,
+        step: checkItems[idx].step,
+        completed: checkItems[idx].done
+      })
+    }).catch(function(){});
+  }
 }
 
 // Camera — fullscreen on mobile
@@ -1834,25 +1859,7 @@ function markComplete() {
   .catch(function(){ showToast('Could not mark complete'); });
 }
 
-// Override toggleCheckMobile to also update complete button
-var _origToggleCheck = toggleCheckMobile;
-function toggleCheckMobile(idx) {
-  _origToggleCheck(idx);
-  updateCompleteBtn();
-  // Save individual checklist item to server
-  if (currentAnalysisId && meridianSession) {
-    fetch('/api/checklist/update', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json',
-                'Authorization': 'Bearer ' + meridianSession.token},
-      body: JSON.stringify({
-        analysis_id: currentAnalysisId,
-        step: checkItems[idx].step,
-        completed: checkItems[idx].done
-      })
-    }).catch(function(){});
-  }
-}
+// toggleCheckMobile enhanced inline below
 
 // ── MY ISSUES ─────────────────────────────────────────────────────────────────
 var issuesTab = 'open';
