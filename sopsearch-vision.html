@@ -470,6 +470,58 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
   background:rgba(194,160,114,.1);
   border-color:rgba(194,160,114,.45);
 }
+
+/* ── COMPLETE BUTTON ─────────────────────────────────────────────── */
+.btn-complete{
+  width:calc(100% - 28px);margin:0 14px 16px;padding:16px;
+  background:linear-gradient(135deg,#4a7a3a,#7aab6e);
+  color:#fff;border:none;border-radius:var(--radius);
+  font-family:'Playfair Display',serif;font-size:16px;font-weight:700;
+  cursor:pointer;letter-spacing:.04em;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.btn-complete:disabled{opacity:.3;cursor:not-allowed;
+  background:var(--surface2);color:var(--muted)}
+.btn-complete:not(:disabled):active{transform:scale(.97)}
+
+/* ── MY ISSUES PANEL ─────────────────────────────────────────────── */
+.issues-sheet{
+  position:fixed;inset:0;z-index:400;background:var(--bg);
+  overflow-y:auto;display:none;
+  padding-bottom:calc(40px + var(--safe-bottom));
+}
+.issues-sheet.open{display:block}
+.issues-head{
+  position:sticky;top:0;background:rgba(5,23,47,.97);
+  border-bottom:1px solid rgba(194,160,114,.18);
+  padding:16px 20px;padding-top:calc(16px + env(safe-area-inset-top,0px));
+  display:flex;align-items:center;justify-content:space-between;
+  backdrop-filter:blur(12px);z-index:10;
+}
+.issues-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:800;letter-spacing:.06em}
+.issues-close{color:var(--accent);font-size:14px;cursor:pointer;padding:4px}
+.issues-tabs{display:flex;gap:0;padding:12px 16px 0;border-bottom:1px solid rgba(194,160,114,.1)}
+.issues-tab{
+  flex:1;text-align:center;padding:10px;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .15s;
+}
+.issues-tab.active{color:var(--accent2);border-bottom-color:var(--accent2)}
+.issues-list{padding:14px 16px}
+.issue-card-mini{
+  background:var(--surface);border:1px solid rgba(194,160,114,.15);
+  border-radius:12px;padding:14px 16px;margin-bottom:10px;
+  border-left:3px solid var(--muted);
+}
+.issue-card-mini.high{border-left-color:var(--warn)}
+.issue-card-mini.medium{border-left-color:var(--gold)}
+.issue-card-mini.low{border-left-color:var(--ok)}
+.issue-card-mini.completed{border-left-color:var(--ok);opacity:.6}
+.icm-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;margin-bottom:4px}
+.icm-meta{font-size:10px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+.icm-sev{font-size:9px;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.08em}
+.icm-date{font-size:10px;color:var(--muted)}
+.issues-empty{text-align:center;padding:48px 24px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -507,7 +559,10 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
   <circle cx="22" cy="22" r="3.2" fill="#0a0d15"/>
   <circle cx="22" cy="22" r="1.4" fill="rgba(255,255,255,0.42)"/>
 </svg></div><span style="letter-spacing:-.01em">Meri<em style="font-style:normal;margin-left:-.5px">dian</em></span></div>
-  <div class="hdr-pill">Field Intelligence</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div id="hdrUserName" style="font-size:11px;color:rgba(194,160,114,.7);letter-spacing:.05em"></div>
+    <div class="hdr-pill" style="cursor:pointer" onclick="doLogout()">Sign out</div>
+  </div>
 </header>
 
 <!-- LOGIN SCREEN -->
@@ -701,15 +756,21 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
   </div><!-- /results -->
 
   <!-- Bottom action bar (shown when results visible) -->
+  <!-- Complete button — shown below checklist in results -->
+  <button class="btn-complete" id="completeBtn" style="display:none" disabled onclick="markComplete()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    Mark as Complete
+  </button>
+
   <div class="bottom-bar" id="bottomBar">
-    <button class="bb-btn" onclick="openAdmin()">&#128218; Manage SOPs</button>
+    <button class="bb-btn" onclick="openIssues()">&#128196; My Issues</button>
     <button class="bb-btn" onclick="clearAll()">&#10005; New Scan</button>
     <button class="bb-btn primary" onclick="exportReport()">&#8675; Export</button>
   </div>
 
 </div><!-- /appScreen -->
 
-<input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)">
+<input type="file" id="fileInput" accept="image/*,application/pdf,.docx,.txt" onchange="handleFile(event)">
 
 <!-- SOP Library Drawer -->
 <div class="drawer-overlay" id="drawerOverlay" onclick="closeSopDrawer()">
@@ -738,6 +799,21 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
     <div class="field"><label>Procedure Content</label><textarea id="mContent" placeholder="Paste the full SOP text here..."></textarea></div>
   </div>
   <button class="sheet-save" onclick="saveSOP()">Save SOP</button>
+</div>
+
+<!-- MY ISSUES SHEET -->
+<div class="issues-sheet" id="issuesSheet">
+  <div class="issues-head">
+    <div class="issues-title">My Issues</div>
+    <div class="issues-close" onclick="closeIssues()">Done</div>
+  </div>
+  <div class="issues-tabs">
+    <div class="issues-tab active" id="tabOpen" onclick="switchIssuesTab('open')">Open</div>
+    <div class="issues-tab" id="tabClosed" onclick="switchIssuesTab('closed')">Completed</div>
+  </div>
+  <div class="issues-list" id="issuesList">
+    <div class="issues-empty">Loading your issues...</div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1411,6 +1487,9 @@ function clearPhoto() {
 function clearAll() {
   clearPhoto();
   analysisData = null; checkItems = [];
+  currentAnalysisId = null;
+  var cb = document.getElementById('completeBtn');
+  if (cb) cb.style.display = 'none';
 }
 
 function clearResults() { clearAll(); }
@@ -1499,6 +1578,10 @@ function renderResults() {
   resultsEl.style.display = 'block';
   resultsEl.classList.add('visible');
   document.getElementById('bottomBar').classList.add('visible');
+  // Show complete button
+  var cb = document.getElementById('completeBtn');
+  if (cb) { cb.style.display = 'flex'; cb.disabled = true; }
+  updateCompleteBtn();
 
   setTimeout(function(){
     resultsEl.scrollIntoView({behavior:'smooth', block:'start'});
@@ -1519,7 +1602,8 @@ function toggleCheckMobile(idx) {
 // Camera — fullscreen on mobile
 function zoneClick() {
   if (capturedImage) return;
-  document.getElementById('fileInput').click();
+  // Tap on zone goes straight to camera
+  toggleCam();
 }
 
 async function toggleCam() {
@@ -1679,7 +1763,19 @@ function doLogin() {
 function launchApp() {
   document.getElementById('apiScreen').style.display = 'none';
   document.getElementById('appScreen').style.display = 'block';
+  // Show user name in header
+  var nameEl = document.getElementById('hdrUserName');
+  if (nameEl && meridianSession) {
+    nameEl.textContent = meridianSession.full_name || meridianSession.email;
+  }
   loadSopsFromServer();
+}
+
+function doLogout() {
+  sessionStorage.removeItem('meridian_session');
+  meridianSession = null;
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('apiScreen').style.display = 'flex';
 }
 
 function loadSopsFromServer() {
@@ -1708,7 +1804,114 @@ function loadSopsFromServer() {
     });
     if (serverSops.length > 0) {
       sops = serverSops;
-      renderSopBar();
+      
+// ── COMPLETE BUTTON LOGIC ─────────────────────────────────────────────────────
+var currentAnalysisId = null;
+
+function updateCompleteBtn() {
+  var btn = document.getElementById('completeBtn');
+  if (!btn) return;
+  var allDone = checkItems.length > 0 && checkItems.every(function(c){ return c.done; });
+  btn.disabled = !allDone;
+}
+
+function markComplete() {
+  if (!currentAnalysisId) { showToast('Save analysis first'); return; }
+  // Update all checklist items as completed in DB
+  fetch('/api/analyses/complete', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json',
+              'Authorization': 'Bearer ' + (meridianSession ? meridianSession.token : '')},
+    body: JSON.stringify({analysis_id: currentAnalysisId})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    showToast('Issue marked as complete!');
+    document.getElementById('completeBtn').style.background = 'var(--surface3)';
+    document.getElementById('completeBtn').textContent = '✓ Completed';
+    document.getElementById('completeBtn').disabled = true;
+  })
+  .catch(function(){ showToast('Could not mark complete'); });
+}
+
+// Override toggleCheckMobile to also update complete button
+var _origToggleCheck = toggleCheckMobile;
+function toggleCheckMobile(idx) {
+  _origToggleCheck(idx);
+  updateCompleteBtn();
+  // Save individual checklist item to server
+  if (currentAnalysisId && meridianSession) {
+    fetch('/api/checklist/update', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json',
+                'Authorization': 'Bearer ' + meridianSession.token},
+      body: JSON.stringify({
+        analysis_id: currentAnalysisId,
+        step: checkItems[idx].step,
+        completed: checkItems[idx].done
+      })
+    }).catch(function(){});
+  }
+}
+
+// ── MY ISSUES ─────────────────────────────────────────────────────────────────
+var issuesTab = 'open';
+
+function openIssues() {
+  document.getElementById('issuesSheet').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  loadMyIssues();
+}
+function closeIssues() {
+  document.getElementById('issuesSheet').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function switchIssuesTab(tab) {
+  issuesTab = tab;
+  document.getElementById('tabOpen').classList.toggle('active', tab==='open');
+  document.getElementById('tabClosed').classList.toggle('active', tab==='closed');
+  loadMyIssues();
+}
+
+function loadMyIssues() {
+  if (!meridianSession) return;
+  fetch('/api/analyses/mine', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json',
+              'Authorization': 'Bearer ' + meridianSession.token},
+    body: JSON.stringify({status: issuesTab})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){ renderIssuesList(data.analyses || []); })
+  .catch(function(){ renderIssuesList([]); });
+}
+
+function renderIssuesList(analyses) {
+  var el = document.getElementById('issuesList');
+  if (!analyses.length) {
+    el.innerHTML = '<div class="issues-empty">' +
+      (issuesTab==='open' ? 'No open issues' : 'No completed issues') + '</div>';
+    return;
+  }
+  el.innerHTML = '';
+  analyses.forEach(function(a) {
+    var sev = (a.severity||'LOW').toLowerCase();
+    var div = document.createElement('div');
+    div.className = 'issue-card-mini ' + sev + (a.completed?' completed':'');
+    var d = new Date(a.created_at);
+    var dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    div.innerHTML =
+      '<div class="icm-title">' + (a.issue_title||'Issue') + '</div>' +
+      '<div class="icm-meta">' +
+        '<span class="icm-sev sev-pill ' + (sev==='high'?'h':sev==='medium'?'m':'l') + '">' + (a.severity||'LOW') + '</span>' +
+        '<span class="icm-date">' + dateStr + '</span>' +
+        (a.completed?'<span style="color:var(--ok)">✓ Completed</span>':'') +
+      '</div>';
+    el.appendChild(div);
+  });
+}
+
+renderSopBar();
       showToast('Loaded ' + serverSops.length + ' SOP' + (serverSops.length===1?'':'s') + ' from library');
     } else {
       // No company SOPs yet — keep built-ins and show message
@@ -1727,12 +1930,18 @@ function saveAnalysisToServer(result) {
     body: JSON.stringify(result)
   })
   .then(function(r){ return r.json(); })
+  .then(function(r){
+    console.log('Save analysis HTTP status:', r.status);
+    return r.json();
+  })
   .then(function(data){
+    console.log('Save analysis response:', JSON.stringify(data).substring(0,200));
     if (data.analysis_id) {
-      console.log('Analysis saved:', data.analysis_id);
       if (result.severity === 'HIGH') {
         showToast('HIGH severity alert sent to management');
       }
+    } else if (data.error) {
+      console.error('Save analysis error:', data.error);
     }
   })
   .catch(function(e){ console.warn('Could not save analysis:', e); });

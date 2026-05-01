@@ -101,16 +101,19 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         routes = {
-            "/api/login":          self.handle_login,
-            "/api/analyze":        self.handle_analyze,
-            "/api/sops":           self.handle_get_sops,
-            "/api/sops/add":       self.handle_add_sop,
-            "/api/sops/delete":    self.handle_delete_sop,
-            "/api/analyses/save":  self.handle_save_analysis,
-            "/api/dashboard":      self.handle_dashboard,
-            "/api/alerts/dismiss": self.handle_dismiss_alert,
-            "/api/team/invite":    self.handle_invite,
-            "/api/team/list":      self.handle_team_list,
+            "/api/login":              self.handle_login,
+            "/api/analyze":            self.handle_analyze,
+            "/api/sops":               self.handle_get_sops,
+            "/api/sops/add":           self.handle_add_sop,
+            "/api/sops/delete":        self.handle_delete_sop,
+            "/api/analyses/save":      self.handle_save_analysis,
+            "/api/analyses/mine":      self.handle_my_analyses,
+            "/api/analyses/complete":  self.handle_complete_analysis,
+            "/api/checklist/update":   self.handle_update_checklist,
+            "/api/dashboard":          self.handle_dashboard,
+            "/api/alerts/dismiss":     self.handle_dismiss_alert,
+            "/api/team/invite":        self.handle_invite,
+            "/api/team/list":          self.handle_team_list,
         }
         h = routes.get(self.path)
         if h:
@@ -353,6 +356,52 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         _, team = supabase("GET",
             "/users?company_id=eq." + profile["company_id"] + "&select=*")
         self.send_json(200, {"team": team if isinstance(team, list) else []})
+
+    def handle_my_analyses(self):
+        token = self.get_token()
+        body  = self.read_body()
+        if not token:
+            self.send_json(401, {"error": "Not authenticated"}); return
+        auth_user, profile = get_user_from_token(token)
+        if not profile:
+            self.send_json(401, {"error": "User not found"}); return
+        status_filter = body.get("status", "open")
+        completed_filter = "eq.true" if status_filter == "closed" else "eq.false"
+        _, analyses = supabase("GET",
+            "/analyses?worker_id=eq." + auth_user["id"] +
+            "&order=created_at.desc&limit=50")
+        self.send_json(200, {"analyses": analyses if isinstance(analyses, list) else []})
+
+    def handle_complete_analysis(self):
+        token = self.get_token()
+        body  = self.read_body()
+        if not token:
+            self.send_json(401, {"error": "Not authenticated"}); return
+        auth_user, profile = get_user_from_token(token)
+        if not profile:
+            self.send_json(401, {"error": "User not found"}); return
+        analysis_id = body.get("analysis_id", "")
+        # Mark all checklist items as complete
+        supabase("PATCH",
+            "/checklist_items?analysis_id=eq." + analysis_id,
+            {"completed": True})
+        self.send_json(200, {"ok": True})
+
+    def handle_update_checklist(self):
+        token = self.get_token()
+        body  = self.read_body()
+        if not token:
+            self.send_json(401, {"error": "Not authenticated"}); return
+        auth_user, profile = get_user_from_token(token)
+        if not profile:
+            self.send_json(401, {"error": "User not found"}); return
+        analysis_id = body.get("analysis_id", "")
+        step        = body.get("step")
+        completed   = body.get("completed", False)
+        supabase("PATCH",
+            "/checklist_items?analysis_id=eq." + analysis_id + "&step=eq." + str(step),
+            {"completed": completed})
+        self.send_json(200, {"ok": True})
 
     def send_json(self, code, obj):
         body = json.dumps(obj).encode()

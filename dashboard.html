@@ -208,7 +208,7 @@ a{color:inherit;text-decoration:none}
           <circle cx="22" cy="22" r="3" fill="#0a0d15"/>
         </svg>
       </div>
-      Meridian
+      <span id="dashCompanyName" style="font-size:14px;letter-spacing:.06em"></span>
     </div>
     <div class="top-right">
       <span class="top-company" id="topCompany"></span>
@@ -356,8 +356,11 @@ function doLogout() {
 function showApp() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appScreen').classList.add('visible');
-  document.getElementById('topCompany').textContent = (session.company && session.company.name) || '';
+  var companyName = (session.company && session.company.name) || 'Dashboard';
+  document.getElementById('topCompany').textContent = '';
   document.getElementById('topUser').textContent    = session.full_name || session.email;
+  var dcn = document.getElementById('dashCompanyName');
+  if (dcn) dcn.textContent = companyName;
   loadDashboard();
   loadSops();
   loadTeam();
