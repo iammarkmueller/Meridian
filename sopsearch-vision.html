@@ -254,9 +254,9 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
   position:fixed;bottom:0;left:0;right:0;
   background:var(--surface);border-top:1px solid var(--border);
   padding:12px 16px;padding-bottom:calc(12px + var(--safe-bottom));
-  display:none;gap:10px;z-index:90;pointer-events:none;
+  display:none;gap:10px;z-index:110;pointer-events:none;
 }
-.bottom-bar.visible{pointer-events:all}
+.bottom-bar.visible{pointer-events:all;display:flex}
 .bottom-bar.visible{display:flex}
 .bb-btn{
   flex:1;padding:14px;border-radius:10px;border:1px solid var(--border2);
@@ -797,7 +797,6 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
   </button>
 
   <div class="bottom-bar" id="bottomBar">
-    <button class="bb-btn" onclick="openIssues()">&#128196; My Issues</button>
     <button class="bb-btn" onclick="clearAll()">&#10005; New Scan</button>
     <button class="bb-btn primary" onclick="exportReport()">&#8675; Export</button>
   </div>
@@ -990,7 +989,8 @@ function compressImage(dataUrl,maxMB){
     var img=new Image();
     img.onload=function(){
       var MAX=maxMB*1024*1024,w=img.naturalWidth,h=img.naturalHeight;
-      if(Math.max(w,h)>1280){var s=1280/Math.max(w,h);w=Math.round(w*s);h=Math.round(h*s);}  // 1280px max edge
+      var maxEdge = MAX < 500000 ? 640 : 1024;  // smaller edge for aggressive compression
+      if(Math.max(w,h)>maxEdge){var s=maxEdge/Math.max(w,h);w=Math.round(w*s);h=Math.round(h*s);}
       var q=0.88,result,tries=0;
       do{
         var cv=document.createElement('canvas');cv.width=w;cv.height=h;
@@ -1039,9 +1039,17 @@ async function runAnalysis(){
     // Compress image (skip for text-only mode)
     var b64 = '';
     if (!isTextOnly) {
-      var compressed = await compressImage(capturedImage, 1.0);
+      // Compress aggressively - max 800KB for reliable transmission
+      var compressed = await compressImage(capturedImage, 0.7);
+      // If still too large, compress more
+      if (compressed.length > 1100000) {
+        compressed = await compressImage(capturedImage, 0.5);
+      }
+      if (compressed.length > 800000) {
+        compressed = await compressImage(capturedImage, 0.3);
+      }
       b64 = compressed.split(',')[1];
-      console.log('Compressed:', Math.round(b64.length * 3 / 4 / 1024), 'KB');
+      console.log('Compressed to:', Math.round(b64.length * 3 / 4 / 1024), 'KB');
     }
 
     // Build concise SOP context
@@ -1931,15 +1939,17 @@ renderSopBar();
 function saveAnalysisToServer(result, callback) {
   if (!meridianSession) { showToast('Not logged in — analysis not saved'); return; }
   showToast('Saving to server...');
+  var saveBody = JSON.stringify(result);
+  console.log('Saving analysis, body size KB:', Math.round(saveBody.length/1024), 'token:', meridianSession.token ? 'present' : 'MISSING');
   fetch('/api/analyses/save', {
     method: 'POST',
     headers: {'Content-Type':'application/json',
               'Authorization': 'Bearer ' + meridianSession.token},
-    body: JSON.stringify(result)
+    body: saveBody
   })
   .then(function(r){
     console.log('Save analysis HTTP status:', r.status);
-    if (!r.ok) throw new Error('Server error: ' + r.status);
+    if (!r.ok) throw new Error('Server returned ' + r.status);
     return r.json();
   })
   .then(function(data){
