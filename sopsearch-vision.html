@@ -1912,35 +1912,35 @@ renderSopBar();
 
 function saveAnalysisToServer(result, callback) {
   if (!meridianSession) { showToast('Not logged in — analysis not saved'); return; }
-  showToast('Saving to server...');
+  showToast('Saving...');
   var saveBody = JSON.stringify(result);
-  console.log('Saving analysis, body size KB:', Math.round(saveBody.length/1024), 'token:', meridianSession.token ? 'present' : 'MISSING');
+  var sizeKB = Math.round(saveBody.length / 1024);
+  showToast('Saving (' + sizeKB + ' KB)...');
+
   fetch('/api/analyses/save', {
     method: 'POST',
-    headers: {'Content-Type':'application/json',
-              'Authorization': 'Bearer ' + meridianSession.token},
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + meridianSession.token
+    },
     body: saveBody
   })
   .then(function(r){
-    console.log('Save analysis HTTP status:', r.status);
-    if (!r.ok) throw new Error('Server returned ' + r.status);
+    showToast('Server replied: ' + r.status);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
   })
   .then(function(data){
-    console.log('Save analysis response:', JSON.stringify(data).substring(0,200));
     if (data.analysis_id) {
       currentAnalysisId = data.analysis_id;
-      console.log('currentAnalysisId set to:', currentAnalysisId);
       if (callback) callback(data.analysis_id);
-      showToast(result.severity === 'HIGH' ? 'HIGH severity alert sent to management' : 'Analysis saved');
+      showToast(result.severity === 'HIGH' ? '🔴 HIGH alert sent to management' : '✓ Analysis saved');
     } else {
-      console.error('Save error:', data.error || data);
-      showToast('Save failed: ' + (data.error || 'unknown error'));
+      showToast('Save error: ' + JSON.stringify(data).substring(0, 60));
     }
   })
   .catch(function(e){
-    console.error('Could not save analysis:', e);
-    showToast('Save failed — check connection');
+    showToast('Save failed: ' + e.message);
   });
 }
 
