@@ -257,7 +257,6 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
   display:none;gap:10px;z-index:110;pointer-events:none;
 }
 .bottom-bar.visible{pointer-events:all;display:flex}
-.bottom-bar.visible{display:flex}
 .bb-btn{
   flex:1;padding:14px;border-radius:10px;border:1px solid var(--border2);
   background:var(--surface2);color:var(--muted);
@@ -554,7 +553,7 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
 
 <!-- HEADER -->
 <header class="hdr">
-  <div class="logo"><div class="logo-icon"><svg width="32" height="32" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <div class="logo" onclick="goHome()" style="cursor:pointer"><div class="logo-icon"><svg width="32" height="32" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Outer ring — nearly fills the badge like Safari -->
   <circle cx="22" cy="22" r="21.5" stroke="#0a0d15" stroke-width="1.6" fill="none"/>
   <!-- N tick — long and bold, starts from ring -->
@@ -1452,6 +1451,22 @@ function doLogout() {
   document.getElementById('apiScreen').style.display = 'flex';
 }
 
+function goHome() {
+  // Reset to main screen — clear results, photo, and panels
+  clearAll();
+  // Close any open sheets
+  var sheets = ['issuesSheet','adminSheet','editOverlay'];
+  sheets.forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('open');
+  });
+  document.body.style.overflow = '';
+  // Scroll to top
+  var app = document.getElementById('appScreen');
+  if (app) app.scrollTop = 0;
+  window.scrollTo(0, 0);
+}
+
 function loadSopsFromServer() {
   if (!meridianSession) return;
   fetch('/api/sops', {
@@ -1570,10 +1585,14 @@ function markComplete() {
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
-    showToast('Issue marked as complete!');
-    document.getElementById('completeBtn').style.background = 'var(--surface3)';
-    document.getElementById('completeBtn').textContent = '✓ Completed';
-    document.getElementById('completeBtn').disabled = true;
+    showToast('✓ Issue marked as complete!');
+    var cb = document.getElementById('completeBtn');
+    if (cb) {
+      cb.style.background = 'linear-gradient(135deg,#3a5a2a,#5a8a4a)';
+      cb.style.pointerEvents = 'none';
+      cb.style.opacity = '0.6';
+      cb.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Completed';
+    }
   })
   .catch(function(){ showToast('Could not mark complete'); });
 }
