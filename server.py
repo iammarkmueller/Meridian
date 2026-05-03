@@ -378,10 +378,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if not profile:
             self.send_json(401, {"error": "User not found"}); return
         status_filter = body.get("status", "open")
-        completed_filter = "eq.true" if status_filter == "closed" else "eq.false"
+        if status_filter == "closed":
+            filter_str = "&completed=eq.true"
+        else:
+            filter_str = "&completed=eq.false"
         _, analyses = supabase("GET",
             "/analyses?worker_id=eq." + auth_user["id"] +
-            "&order=created_at.desc&limit=50")
+            filter_str + "&order=created_at.desc&limit=50")
         self.send_json(200, {"analyses": analyses if isinstance(analyses, list) else []})
 
     def handle_complete_analysis(self):
@@ -393,11 +396,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if not profile:
             self.send_json(401, {"error": "User not found"}); return
         analysis_id = body.get("analysis_id", "")
-        # Mark all checklist items as complete
+        reopen      = body.get("reopen", False)
+        completed   = not reopen
+        # Mark all checklist items
         supabase("PATCH",
             "/checklist_items?analysis_id=eq." + analysis_id,
-            {"completed": True})
-        self.send_json(200, {"ok": True})
+            {"completed": completed})
+        # Mark the analysis itself
+        supabase("PATCH",
+            "/analyses?id=eq." + analysis_id,
+            {"completed": completed})
+        self.send_json(200, {"ok": True, "completed": completed})
 
     def handle_update_checklist(self):
         token = self.get_token()
