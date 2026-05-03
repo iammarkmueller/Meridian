@@ -1656,6 +1656,255 @@ function renderIssuesList(analyses) {
 }
 
 
+
+// ── ADMIN / PROCEDURES PANEL ─────────────────────────────────────────────────
+function openAdmin() {
+  renderAdminList();
+  var sheet = document.getElementById('adminSheet');
+  if (sheet) { sheet.classList.add('open'); document.body.style.overflow='hidden'; }
+}
+function closeAdmin() {
+  var sheet = document.getElementById('adminSheet');
+  if (sheet) sheet.classList.remove('open');
+  document.body.style.overflow='';
+  renderSopBar();
+}
+function renderAdminList() {
+  var list = document.getElementById('adminSopList');
+  if (!list) return;
+  list.innerHTML = '';
+  var countEl = document.getElementById('adminSopCount');
+  if (countEl) countEl.textContent = sops.length + ' SOPs';
+  var catLabels = {maint:'Maintenance',safety:'Safety',ops:'Operations',quality:'Quality'};
+  sops.forEach(function(sop, idx) {
+    var card = document.createElement('div');
+    card.className = 'admin-sop-card';
+    card.innerHTML =
+      '<div class="asc-body">' +
+        '<div class="asc-name">' + sop.name + '</div>' +
+        '<div class="asc-meta">' +
+          '<span>' + (sop.id||'') + '</span>' +
+          '<span>' + (catLabels[sop.category]||sop.category||'') + '</span>' +
+          (sop.imported ? '<span class="asc-imported">imported</span>' : '') +
+        '</div>' +
+        '<div class="asc-preview">' + (sop.content||'').substring(0,120) + '...</div>' +
+      '</div>' +
+      '<div class="asc-actions">' +
+        '<button class="asc-btn asc-btn-edit" onclick="openEdit(' + idx + ')">Edit</button>' +
+        '<button class="asc-btn asc-btn-del" onclick="deleteSopAdmin(' + idx + ')">Delete</button>' +
+      '</div>';
+    list.appendChild(card);
+  });
+}
+function deleteSopAdmin(idx) {
+  var sop = sops[idx];
+  if (!sop) return;
+  var name = sop.name;
+  // Delete from server if it has a dbId
+  if (sop.dbId && meridianSession) {
+    fetch('/api/sops/delete', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+meridianSession.token},
+      body: JSON.stringify({id: sop.dbId})
+    }).catch(function(){});
+  }
+  sops.splice(idx, 1);
+  saveSops();
+  renderAdminList();
+  showToast('Deleted: ' + name);
+}
+
+var editingIdx = -1;
+function openEdit(idx) {
+  editingIdx = idx;
+  var sop = sops[idx];
+  if (!sop) return;
+  var nameEl    = document.getElementById('editName');
+  var catEl     = document.getElementById('editCat');
+  var idEl      = document.getElementById('editId');
+  var contentEl = document.getElementById('editContent');
+  if (nameEl)    nameEl.value    = sop.name    || '';
+  if (catEl)     catEl.value     = sop.category|| 'maint';
+  if (idEl)      idEl.value      = sop.id      || '';
+  if (contentEl) contentEl.value = sop.content || '';
+  var overlay = document.getElementById('editOverlay');
+  if (overlay) overlay.classList.add('open');
+}
+function closeEditOverlay() {
+  var overlay = document.getElementById('editOverlay');
+  if (overlay) overlay.classList.remove('open');
+  editingIdx = -1;
+}
+function saveEdit() {
+  if (editingIdx < 0) return;
+  var nameEl    = document.getElementById('editName');
+  var catEl     = document.getElementById('editCat');
+  var idEl      = document.getElementById('editId');
+  var contentEl = document.getElementById('editContent');
+  if (nameEl)    sops[editingIdx].name     = nameEl.value.trim();
+  if (catEl)     sops[editingIdx].category = catEl.value;
+  if (idEl)      sops[editingIdx].id       = idEl.value.trim();
+  if (contentEl) sops[editingIdx].content  = contentEl.value.trim();
+  saveSops();
+  closeEditOverlay();
+  renderAdminList();
+  showToast('SOP updated');
+}
+
+function setProcBar(pct, label) {
+  var bar = document.getElementById('sopProcBar');
+  if (!bar) return;
+  if (pct < 0) { bar.classList.remove('active'); return; }
+  bar.classList.add('active');
+  var fill = document.getElementById('sopProcFill');
+  var lbl  = document.getElementById('sopProcLabel');
+  if (fill) fill.style.width = pct + '%';
+  if (lbl)  lbl.textContent  = label;
+}
+function handleSopFileDrop(e) {
+  e.preventDefault();
+  var dz = document.getElementById('adminDropZone');
+  if (dz) dz.classList.remove('drag-over');
+  var file = e.dataTransfer && e.dataTransfer.files[0];
+  if (file) processSopFile(file);
+}
+function handleSopFileSelect(e) {
+  var file = e.target.files[0];
+  if (file) processSopFile(file);
+  e.target.value = '';
+}
+async function processSopFile(file) {
+  var name = file.name;
+  var ext  = name.split('.').pop().toLowerCase();
+  setProcBar(10, 'Reading file...');
+  try {
+    var text = '';
+    if (ext === 'txt') {
+      setProcBar(40, 'Reading text...');
+      text = await new Promise(function(res,rej){
+        var r = new FileReader();
+        r.onload = function(e){res(e.target.result);}; r.onerror=rej;
+        r.readAsText(file);
+      });
+    } else if (ext === 'docx') {
+      if (typeof mammoth === 'undefined') throw new Error('DOCX reader not loaded');
+      setProcBar(30, 'Extracting DOCX...');
+      var buf = await new Promise(function(res,rej){
+        var r = new FileReader();
+        r.onload = function(e){res(e.target.result);}; r.onerror=rej;
+        r.readAsArrayBuffer(file);
+      });
+      setProcBar(60, 'Converting...');
+      var result = await mammoth.extractRawText({arrayBuffer: buf});
+      text = result.value;
+    } else {
+      throw new Error('Use DOCX or TXT format');
+    }
+    if (!text || text.trim().length < 20) throw new Error('No readable text found');
+    setProcBar(90, 'Saving to library...');
+    var sopName = name.replace(/[.][^.]+$/, '').replace(/[-_]/g, ' ');
+    sopName = sopName.replace(/\b\w/g, function(c){return c.toUpperCase();});
+    var lower = text.toLowerCase();
+    var cat   = 'ops';
+    if (lower.indexOf('safety')>-1||lower.indexOf('hazard')>-1) cat='safety';
+    else if (lower.indexOf('maintenance')>-1||lower.indexOf('repair')>-1) cat='maint';
+    else if (lower.indexOf('quality')>-1||lower.indexOf('defect')>-1) cat='quality';
+    var idMatch = text.match(/[A-Z]{2,5}-[A-Z]{2,6}-\d{3,4}/);
+    var sopId   = idMatch ? idMatch[0] : 'SOP-'+cat.toUpperCase()+'-'+('00'+(sops.length+1)).slice(-3);
+
+    // Save to server
+    if (meridianSession) {
+      fetch('/api/sops/add', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':'Bearer '+meridianSession.token},
+        body: JSON.stringify({name:sopName, sop_id:sopId, category:cat, content:text.trim(), source:name, version:'1.0'})
+      })
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if (data.sop) {
+          sops.push({id:sopId, dbId:data.sop.id, name:sopName, category:cat, content:text.trim(), imported:true, source:name});
+        }
+        setProcBar(100,'Done!');
+        setTimeout(function(){ setProcBar(-1,''); renderAdminList(); showToast('Added: '+sopName); }, 600);
+      })
+      .catch(function(){ showToast('Error saving to server'); setProcBar(-1,''); });
+    } else {
+      sops.push({id:sopId, name:sopName, category:cat, content:text.trim(), imported:true, source:name});
+      saveSops();
+      setProcBar(100,'Done!');
+      setTimeout(function(){ setProcBar(-1,''); renderAdminList(); showToast('Added: '+sopName); }, 600);
+    }
+  } catch(err) {
+    setProcBar(-1,'');
+    showToast('Error: '+(err.message||String(err)));
+  }
+}
+
+// ── CORE NAVIGATION FUNCTIONS ─────────────────────────────────────────────────
+function clearAll() {
+  clearPhoto();
+  analysisData = null;
+  checkItems = [];
+  currentAnalysisId = null;
+  // Hide results
+  var resultsEl = document.getElementById('results');
+  if (resultsEl) { resultsEl.classList.remove('visible'); resultsEl.style.display='none'; }
+  // Hide bottom bar, show action bar
+  var bb = document.getElementById('bottomBar');
+  if (bb) { bb.classList.remove('visible'); bb.style.display='none'; }
+  var ab = document.getElementById('actionBar');
+  if (ab) ab.style.display = 'flex';
+  // Hide complete button
+  var cb = document.getElementById('completeBtn');
+  if (cb) cb.style.display = 'none';
+  // Reset describe
+  var dt = document.getElementById('describeText');
+  if (dt) dt.value = '';
+  var dp = document.getElementById('describePanel');
+  if (dp) dp.classList.remove('open');
+  var db = document.getElementById('describeBtn');
+  if (db) db.classList.remove('active');
+  updateAnalyzeBtn();
+  window.scrollTo(0,0);
+}
+
+function clearResults() { clearAll(); }
+
+function exportReport() {
+  if (!analysisData) { showToast('No analysis to export'); return; }
+  var r = analysisData;
+  var lines = [
+    'MERIDIAN — FIELD ISSUE REPORT',
+    '================================',
+    'Date: ' + new Date().toLocaleString(),
+    'Worker: ' + (meridianSession ? meridianSession.full_name || meridianSession.email : 'Unknown'),
+    '',
+    'ISSUE: ' + (r.issue_title || ''),
+    'Severity: ' + (r.severity || ''),
+    '',
+    'Description:',
+    r.issue_description || '',
+    '',
+    'CHECKLIST:',
+  ];
+  checkItems.forEach(function(item, i) {
+    lines.push((item.done ? '[X] ' : '[ ] ') + (i+1) + '. ' + item.title);
+    if (item.detail) lines.push('    ' + item.detail);
+  });
+  lines.push('');
+  lines.push('AI SUMMARY:');
+  lines.push(r.summary || '');
+  var blob = new Blob([lines.join('\n')], {type:'text/plain'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href   = url;
+  a.download = 'Meridian_Report_' + new Date().toISOString().substring(0,10) + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Report exported');
+}
 </script>
 
 <!-- ── ADMIN PAGE ── -->
