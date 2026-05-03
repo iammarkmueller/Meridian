@@ -1228,7 +1228,7 @@ function renderResults(){
 
   // Show results — use both property and class to be safe
   var resultsEl=document.getElementById('results');
-  saveAnalysisToServer(r);
+  saveAnalysisToServer(r, function(aid){ currentAnalysisId = aid; });
   resultsEl.style.display='block';
   resultsEl.classList.add('visible');
 
@@ -1928,30 +1928,36 @@ renderSopBar();
   .catch(function(e){ console.warn('Could not load SOPs from server:', e); });
 }
 
-function saveAnalysisToServer(result) {
-  if (!meridianSession) return;
+function saveAnalysisToServer(result, callback) {
+  if (!meridianSession) { showToast('Not logged in — analysis not saved'); return; }
+  showToast('Saving to server...');
   fetch('/api/analyses/save', {
     method: 'POST',
     headers: {'Content-Type':'application/json',
               'Authorization': 'Bearer ' + meridianSession.token},
     body: JSON.stringify(result)
   })
-  .then(function(r){ return r.json(); })
   .then(function(r){
     console.log('Save analysis HTTP status:', r.status);
+    if (!r.ok) throw new Error('Server error: ' + r.status);
     return r.json();
   })
   .then(function(data){
     console.log('Save analysis response:', JSON.stringify(data).substring(0,200));
     if (data.analysis_id) {
-      if (result.severity === 'HIGH') {
-        showToast('HIGH severity alert sent to management');
-      }
-    } else if (data.error) {
-      console.error('Save analysis error:', data.error);
+      currentAnalysisId = data.analysis_id;
+      console.log('currentAnalysisId set to:', currentAnalysisId);
+      if (callback) callback(data.analysis_id);
+      showToast(result.severity === 'HIGH' ? 'HIGH severity alert sent to management' : 'Analysis saved');
+    } else {
+      console.error('Save error:', data.error || data);
+      showToast('Save failed: ' + (data.error || 'unknown error'));
     }
   })
-  .catch(function(e){ console.warn('Could not save analysis:', e); });
+  .catch(function(e){
+    console.error('Could not save analysis:', e);
+    showToast('Save failed — check connection');
+  });
 }
 
 // Allow Enter key on login
