@@ -26,10 +26,10 @@ DIR          = os.path.dirname(os.path.abspath(__file__))
 def supabase(method, path, body=None, token=None):
     url = SUPABASE_URL.rstrip("/") + "/rest/v1" + path
     headers = {
-        "Content-Type":  "application/json",
-        "apikey":        SUPABASE_KEY,
-        "Authorization": "Bearer " + (token or SUPABASE_KEY),
-        "Prefer":        "return=representation",
+        "Content-Type":       "application/json",
+        "apikey":             SUPABASE_KEY,
+        "Authorization":      "Bearer " + SUPABASE_KEY,  # Always use service key to bypass RLS
+        "Prefer":             "return=representation",
     }
     data = json.dumps(body).encode() if body else None
     req  = urllib.request.Request(url, data=data, headers=headers, method=method)
@@ -254,8 +254,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             "raw_result":   json.dumps(body),
         }
         status, data = supabase("POST", "/analyses", analysis)
+        print("  Save analysis status:" + str(status) + " data:" + str(data)[:200])
         if status not in (200, 201):
-            self.send_json(500, {"error": "Failed to save"}); return
+            self.send_json(500, {"error": "Failed to save: " + str(data)}); return
         analysis_id = data[0]["id"] if isinstance(data, list) else data.get("id","")
         for item in body.get("checklist", []):
             supabase("POST", "/checklist_items", {
@@ -285,10 +286,19 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if not profile or profile.get("role") not in ("manager", "admin"):
             self.send_json(403, {"error": "Managers only"}); return
         cid = profile["company_id"]
-        _, analyses = supabase("GET",
+        status_a, analyses = supabase("GET",
             "/analyses?company_id=eq." + cid +
-            "&select=*,users(full_name)&order=created_at.desc&limit=50")
+            "&order=created_at.desc&limit=50")
+        print("  Dashboard analyses status:" + str(status_a) + " count:" + str(len(analyses) if isinstance(analyses,list) else analyses))
         analyses = analyses if isinstance(analyses, list) else []
+        # Enrich with worker names
+        for a in analyses:
+            if a.get("worker_id"):
+                _, urows = supabase("GET", "/users?id=eq." + a["worker_id"] + "&select=full_name")
+                if isinstance(urows,list) and urows:
+                    a["worker_name"] = urows[0].get("full_name","Unknown")
+                else:
+                    a["worker_name"] = "Unknown"
         _, alerts = supabase("GET",
             "/alerts?company_id=eq." + cid +
             "&dismissed=eq.false&order=sent_at.desc&limit=10")

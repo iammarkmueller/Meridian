@@ -254,8 +254,9 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
   position:fixed;bottom:0;left:0;right:0;
   background:var(--surface);border-top:1px solid var(--border);
   padding:12px 16px;padding-bottom:calc(12px + var(--safe-bottom));
-  display:none;gap:10px;z-index:90;
+  display:none;gap:10px;z-index:90;pointer-events:none;
 }
+.bottom-bar.visible{pointer-events:all}
 .bottom-bar.visible{display:flex}
 .bb-btn{
   flex:1;padding:14px;border-radius:10px;border:1px solid var(--border2);
@@ -471,6 +472,30 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
   border-color:rgba(194,160,114,.45);
 }
 
+/* ── PERSISTENT ACTION BAR ──────────────────────────────────────── */
+.action-bar{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  z-index:100;
+  display:flex;
+  background:var(--surface);
+  border-top:1px solid rgba(194,160,114,.15);
+  padding:10px 14px;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));
+  gap:10px;
+}
+.action-bar-btn{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+  background:rgba(194,160,114,.06);
+  border:1px solid rgba(194,160,114,.18);
+  color:rgba(194,160,114,.8);
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  cursor:pointer;padding:10px 12px;border-radius:10px;
+  transition:all .2s;-webkit-tap-highlight-color:transparent;
+}
+.action-bar-btn:active{background:rgba(194,160,114,.15)}
+
 /* ── COMPLETE BUTTON ─────────────────────────────────────────────── */
 .btn-complete{
   width:calc(100% - 28px);margin:0 14px 16px;padding:16px;
@@ -480,8 +505,9 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
   cursor:pointer;letter-spacing:.04em;transition:all .2s;
   display:flex;align-items:center;justify-content:center;gap:10px;
 }
-.btn-complete:disabled{opacity:.3;cursor:not-allowed;
-  background:var(--surface2);color:var(--muted)}
+.btn-complete[disabled]{opacity:.3;cursor:not-allowed;
+  background:var(--surface2) !important;color:var(--muted);pointer-events:none}
+.btn-complete:not([disabled]){pointer-events:all;cursor:pointer}
 .btn-complete:not(:disabled):active{transform:scale(.97)}
 
 /* ── MY ISSUES PANEL ─────────────────────────────────────────────── */
@@ -703,7 +729,7 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
 
   <!-- Progress -->
   <!-- Persistent manage procedures link -->
-  <div style="text-align:center;padding:4px 0 8px;display:flex;gap:10px;justify-content:center;padding:8px 16px">
+  <div style="display:flex;gap:10px;padding:8px 16px;position:relative;z-index:95">
     <button onclick="openIssues()" style="
       flex:1;background:var(--surface);border:1px solid rgba(194,160,114,.2);
       color:rgba(194,160,114,.8);font-family:'DM Sans',sans-serif;
@@ -765,7 +791,7 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
 
   <!-- Bottom action bar (shown when results visible) -->
   <!-- Complete button — shown below checklist in results -->
-  <button class="btn-complete" id="completeBtn" style="display:none" disabled onclick="markComplete()">
+  <button class="btn-complete" id="completeBtn" style="display:none;pointer-events:none;opacity:.3" onclick="handleCompleteTap()">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
     Mark as Complete
   </button>
@@ -807,6 +833,26 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
     <div class="field"><label>Procedure Content</label><textarea id="mContent" placeholder="Paste the full SOP text here..."></textarea></div>
   </div>
   <button class="sheet-save" onclick="saveSOP()">Save SOP</button>
+</div>
+
+<!-- PERSISTENT ACTION BAR — always visible, fixed above safe area -->
+<div class="action-bar" id="actionBar">
+  <button class="action-bar-btn" onclick="openIssues()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>
+    My Issues
+  </button>
+  <button class="action-bar-btn" onclick="openAdmin()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+    </svg>
+    Procedures
+  </button>
 </div>
 
 <!-- MY ISSUES SHEET -->
@@ -1075,13 +1121,36 @@ async function runAnalysis(){
     console.log('Response chars:', raw.length);
 
     raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    // Try multiple strategies to extract JSON
+    var parsed = null;
     var jStart = raw.indexOf('{');
     var jEnd   = raw.lastIndexOf('}');
-    if (jStart === -1 || jEnd <= jStart) throw new Error('No JSON in response: ' + raw.substring(0, 150));
-
-    var parsed;
-    try { parsed = JSON.parse(raw.substring(jStart, jEnd + 1)); }
-    catch(e) { throw new Error('JSON parse error: ' + e.message); }
+    
+    if (jStart >= 0 && jEnd > jStart) {
+      try { parsed = JSON.parse(raw.substring(jStart, jEnd + 1)); }
+      catch(e1) {
+        // Try finding the largest valid JSON object
+        var attempts = [];
+        var pos = 0;
+        while ((pos = raw.indexOf('{', pos)) >= 0) {
+          try {
+            var depth = 0;
+            for (var ci = pos; ci < raw.length; ci++) {
+              if (raw[ci] === '{') depth++;
+              else if (raw[ci] === '}') { depth--; if (depth === 0) { attempts.push(raw.substring(pos, ci+1)); break; } }
+            }
+          } catch(e2) {}
+          pos++;
+        }
+        // Try longest first (most complete)
+        attempts.sort(function(a,b){ return b.length - a.length; });
+        for (var ai = 0; ai < attempts.length; ai++) {
+          try { parsed = JSON.parse(attempts[ai]); if (parsed.issue_title) break; } catch(e3) {}
+        }
+      }
+    }
+    
+    if (!parsed) throw new Error('No valid JSON in response. Raw: ' + raw.substring(0,150));
 
     parsed.issue_title       = parsed.issue_title       || 'Issue Detected';
     parsed.issue_description = parsed.issue_description || '';
@@ -1586,10 +1655,16 @@ function renderResults() {
   resultsEl.style.display = 'block';
   resultsEl.classList.add('visible');
   document.getElementById('bottomBar').classList.add('visible');
-  // Show complete button
+  // Show and reset complete button
   var cb = document.getElementById('completeBtn');
-  if (cb) { cb.style.display = 'flex'; cb.disabled = true; }
-  updateCompleteBtn();
+  if (cb) {
+    cb.style.display = 'flex';
+    cb.style.pointerEvents = 'none';
+    cb.style.opacity = '0.3';
+    cb.style.background = '';
+    cb.setAttribute('disabled','true');
+    cb.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Mark as Complete';
+  }
 
   setTimeout(function(){
     resultsEl.scrollIntoView({behavior:'smooth', block:'start'});
@@ -1605,10 +1680,22 @@ function toggleCheckMobile(idx) {
   }
   var done = checkItems.filter(function(c){return c.done;}).length;
   document.getElementById('doneCount').textContent = done;
-  // Update complete button
+  // Update complete button state using style (more reliable on iOS)
   var allDone = checkItems.length > 0 && checkItems.every(function(c){ return c.done; });
   var btn = document.getElementById('completeBtn');
-  if (btn) btn.disabled = !allDone;
+  if (btn) {
+    if (allDone) {
+      btn.style.pointerEvents = 'all';
+      btn.style.opacity = '1';
+      btn.style.background = 'linear-gradient(135deg,#4a7a3a,#7aab6e)';
+      btn.removeAttribute('disabled');
+    } else {
+      btn.style.pointerEvents = 'none';
+      btn.style.opacity = '0.3';
+      btn.style.background = '';
+      btn.setAttribute('disabled', 'true');
+    }
+  }
   // Save to server
   if (currentAnalysisId && meridianSession) {
     fetch('/api/checklist/update', {
@@ -1830,14 +1917,73 @@ function loadSopsFromServer() {
     if (serverSops.length > 0) {
       sops = serverSops;
       
+
+renderSopBar();
+      showToast('Loaded ' + serverSops.length + ' SOP' + (serverSops.length===1?'':'s') + ' from library');
+    } else {
+      // No company SOPs yet — keep built-ins and show message
+      showToast('No SOPs in library yet — add them via the dashboard');
+    }
+  })
+  .catch(function(e){ console.warn('Could not load SOPs from server:', e); });
+}
+
+function saveAnalysisToServer(result) {
+  if (!meridianSession) return;
+  fetch('/api/analyses/save', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json',
+              'Authorization': 'Bearer ' + meridianSession.token},
+    body: JSON.stringify(result)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(r){
+    console.log('Save analysis HTTP status:', r.status);
+    return r.json();
+  })
+  .then(function(data){
+    console.log('Save analysis response:', JSON.stringify(data).substring(0,200));
+    if (data.analysis_id) {
+      if (result.severity === 'HIGH') {
+        showToast('HIGH severity alert sent to management');
+      }
+    } else if (data.error) {
+      console.error('Save analysis error:', data.error);
+    }
+  })
+  .catch(function(e){ console.warn('Could not save analysis:', e); });
+}
+
+// Allow Enter key on login
+document.addEventListener('DOMContentLoaded', function() {
+  var pw = document.getElementById('loginPassword');
+  if (pw) pw.addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
+  var em = document.getElementById('loginEmail');
+  if (em) em.addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('loginPassword').focus(); });
+});
+
+(function init(){
+  var saved = sessionStorage.getItem('meridian_session');
+  if (saved) {
+    meridianSession = JSON.parse(saved);
+    if (meridianSession && meridianSession.token) {
+      launchApp();
+      return;
+    }
+  }
+  // Show login screen
+  document.getElementById('apiScreen').style.display = 'flex';
+})();
+
 // ── COMPLETE BUTTON LOGIC ─────────────────────────────────────────────────────
 var currentAnalysisId = null;
 
-function updateCompleteBtn() {
+// complete button updated inline in toggleCheckMobile
+
+function handleCompleteTap() {
   var btn = document.getElementById('completeBtn');
-  if (!btn) return;
-  var allDone = checkItems.length > 0 && checkItems.every(function(c){ return c.done; });
-  btn.disabled = !allDone;
+  if (!btn || btn.style.pointerEvents === 'none') return;
+  markComplete();
 }
 
 function markComplete() {
@@ -1859,7 +2005,6 @@ function markComplete() {
   .catch(function(){ showToast('Could not mark complete'); });
 }
 
-// toggleCheckMobile enhanced inline below
 
 // ── MY ISSUES ─────────────────────────────────────────────────────────────────
 var issuesTab = 'open';
@@ -1918,62 +2063,7 @@ function renderIssuesList(analyses) {
   });
 }
 
-renderSopBar();
-      showToast('Loaded ' + serverSops.length + ' SOP' + (serverSops.length===1?'':'s') + ' from library');
-    } else {
-      // No company SOPs yet — keep built-ins and show message
-      showToast('No SOPs in library yet — add them via the dashboard');
-    }
-  })
-  .catch(function(e){ console.warn('Could not load SOPs from server:', e); });
-}
 
-function saveAnalysisToServer(result) {
-  if (!meridianSession) return;
-  fetch('/api/analyses/save', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json',
-              'Authorization': 'Bearer ' + meridianSession.token},
-    body: JSON.stringify(result)
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(r){
-    console.log('Save analysis HTTP status:', r.status);
-    return r.json();
-  })
-  .then(function(data){
-    console.log('Save analysis response:', JSON.stringify(data).substring(0,200));
-    if (data.analysis_id) {
-      if (result.severity === 'HIGH') {
-        showToast('HIGH severity alert sent to management');
-      }
-    } else if (data.error) {
-      console.error('Save analysis error:', data.error);
-    }
-  })
-  .catch(function(e){ console.warn('Could not save analysis:', e); });
-}
-
-// Allow Enter key on login
-document.addEventListener('DOMContentLoaded', function() {
-  var pw = document.getElementById('loginPassword');
-  if (pw) pw.addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
-  var em = document.getElementById('loginEmail');
-  if (em) em.addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('loginPassword').focus(); });
-});
-
-(function init(){
-  var saved = sessionStorage.getItem('meridian_session');
-  if (saved) {
-    meridianSession = JSON.parse(saved);
-    if (meridianSession && meridianSession.token) {
-      launchApp();
-      return;
-    }
-  }
-  // Show login screen
-  document.getElementById('apiScreen').style.display = 'flex';
-})();
 </script>
 
 <!-- ── ADMIN PAGE ── -->
