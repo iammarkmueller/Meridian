@@ -20,7 +20,7 @@ API_KEY      = os.environ.get("ANTHROPIC_API_KEY", "")
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
 RESEND_KEY   = os.environ.get("RESEND_API_KEY", "")
-PORT         = int(os.environ.get("PORT", 8765))
+PORT         = int(os.environ.get("PORT", 10000))
 DIR          = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -475,7 +475,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             with urllib.request.urlopen(req, timeout=15) as r:
                 new_user = json.loads(r.read())
         except urllib.error.HTTPError as e:
-            self.send_json(400, {"error": str(e.read())}); return
+            err_body = e.read().decode()
+            try:
+                err_json = json.loads(err_body)
+            except Exception:
+                err_json = {}
+            if err_json.get("error_code") == "email_exists" or e.code == 422:
+                self.send_json(409, {"error": "A user with this email address is already registered. Check the Team list or delete the existing account in Supabase first."})
+            else:
+                print(f"[invite] Supabase error {e.code}: {err_body}")
+                self.send_json(400, {"error": "Could not create account. Check Render logs for details."})
+            return
         supabase("POST", "/users", {
             "id":         new_user["id"],
             "company_id": profile["company_id"],
