@@ -14,6 +14,40 @@
   --warn:#c87c50;--ok:#7aab6e;--gold:#d4ac50;
   --text:#e8dfc8;--muted:#787C83;
 }
+
+/* ── LIGHT MODE ── */
+:root.light{
+  --bg:#f4f1eb;--surface:#ffffff;--surface2:#f0ece3;--surface3:#e4ddd0;
+  --border:rgba(140,110,70,.18);--border2:rgba(140,110,70,.32);
+  --accent:#8B6834;--accent2:#7A5C28;--accent3:#A07840;
+  --warn:#c0552a;--ok:#4a8a3e;--gold:#9a7a20;
+  --text:#2a2118;--muted:#7a6e62;
+}
+:root.light .metric-sub{color:rgba(42,33,24,.4)}
+:root.light .ai-meta{color:rgba(42,33,24,.45)}
+:root.light .ai-time{color:rgba(42,33,24,.3)}
+:root.light .ab-desc{color:rgba(42,33,24,.5)}
+:root.light .btn-dismiss{background:rgba(42,33,24,.06);border-color:rgba(42,33,24,.15);color:rgba(42,33,24,.5)}
+:root.light .dp-summary{color:rgba(42,33,24,.8)}
+:root.light .dp-check-detail{color:rgba(42,33,24,.5)}
+:root.light .sop-preview{color:rgba(42,33,24,.4)}
+:root.light .empty h3{color:rgba(42,33,24,.5)}
+:root.light .sb-item{color:rgba(42,33,24,.45)}
+:root.light .sb-item:hover{color:var(--text)}
+:root.light .dp-btn-secondary{background:rgba(42,33,24,.05)}
+:root.light .dp-close{background:rgba(42,33,24,.05)}
+:root.light .detail-overlay{background:rgba(180,165,145,.55)}
+
+/* ── THEME TOGGLE ── */
+.theme-toggle{
+  width:36px;height:36px;border-radius:8px;
+  background:transparent;border:1px solid var(--border);
+  color:var(--muted);cursor:pointer;display:grid;place-items:center;
+  transition:all .2s;flex-shrink:0;
+}
+.theme-toggle:hover{border-color:var(--accent);color:var(--accent);background:rgba(194,160,114,.08)}
+:root.light .theme-toggle:hover{background:rgba(139,104,52,.08)}
+
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;min-height:100vh}
 a{color:inherit;text-decoration:none}
 
@@ -263,7 +297,7 @@ a{color:inherit;text-decoration:none}
     <div class="top-right">
       <span class="top-company" id="topCompany"></span>
       <span class="top-user" id="topUser"></span>
-      <button class="btn-logout" onclick="doLogout()">Sign out</button>
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light / dark mode"><svg id="themeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button><button class="btn-logout" onclick="doLogout()">Sign out</button>
     </div>
   </div>
 
@@ -849,6 +883,34 @@ function showToast(msg) {
   t.textContent = msg; t.classList.add('show');
   setTimeout(function(){t.classList.remove('show');}, 3000);
 }
+
+
+// ── THEME ─────────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  var root  = document.documentElement;
+  var light = root.classList.toggle('light');
+  localStorage.setItem('meridian_theme', light ? 'light' : 'dark');
+  updateThemeIcon(light);
+}
+function updateThemeIcon(isLight) {
+  var icon = document.getElementById('themeIcon');
+  if (!icon) return;
+  if (isLight) {
+    // Moon icon for light mode (click to go dark)
+    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  } else {
+    // Sun icon for dark mode (click to go light)
+    icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  }
+}
+function applyStoredTheme() {
+  var stored = localStorage.getItem('meridian_theme');
+  if (stored === 'light') {
+    document.documentElement.classList.add('light');
+    updateThemeIcon(true);
+  }
+}
+applyStoredTheme();
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 (function(){
