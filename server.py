@@ -111,6 +111,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             "/api/analyses/save":      self.handle_save_analysis,
             "/api/analyses/mine":      self.handle_my_analyses,
             "/api/analyses/complete":  self.handle_complete_analysis,
+            "/api/analyses/detail":    self.handle_analysis_detail,
             "/api/checklist/update":   self.handle_update_checklist,
             "/api/dashboard":          self.handle_dashboard,
             "/api/alerts/dismiss":     self.handle_dismiss_alert,
@@ -407,6 +408,37 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             "/analyses?id=eq." + analysis_id,
             {"completed": completed})
         self.send_json(200, {"ok": True, "completed": completed})
+
+    def handle_analysis_detail(self):
+        token = self.get_token()
+        body  = self.read_body()
+        if not token:
+            self.send_json(401, {"error": "Not authenticated"}); return
+        auth_user, profile = get_user_from_token(token)
+        if not profile:
+            self.send_json(401, {"error": "User not found"}); return
+        analysis_id = body.get("analysis_id", "")
+        if not analysis_id:
+            self.send_json(400, {"error": "analysis_id required"}); return
+        # Fetch the analysis (scoped to company)
+        status_a, rows = supabase("GET",
+            "/analyses?id=eq." + analysis_id +
+            "&company_id=eq." + profile["company_id"])
+        if status_a != 200 or not rows:
+            self.send_json(404, {"error": "Analysis not found"}); return
+        analysis = rows[0]
+        # Enrich with worker name
+        if analysis.get("worker_id"):
+            _, urows = supabase("GET", "/users?id=eq." + analysis["worker_id"] + "&select=full_name")
+            if isinstance(urows, list) and urows:
+                analysis["worker_name"] = urows[0].get("full_name", "Unknown")
+        # Fetch checklist items ordered by step
+        _, items = supabase("GET",
+            "/checklist_items?analysis_id=eq." + analysis_id + "&order=step.asc")
+        self.send_json(200, {
+            "analysis": analysis,
+            "checklist": items if isinstance(items, list) else []
+        })
 
     def handle_update_checklist(self):
         token = self.get_token()

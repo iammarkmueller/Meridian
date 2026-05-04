@@ -159,10 +159,60 @@ a{color:inherit;text-decoration:none}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:10px 20px;font-size:12px;border-radius:20px;transition:transform .25s;z-index:200;white-space:nowrap;opacity:0}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 
+/* ── DETAIL PANEL ── */
+.detail-overlay{position:fixed;inset:0;background:rgba(5,10,20,.7);backdrop-filter:blur(3px);z-index:100;opacity:0;pointer-events:none;transition:opacity .25s}
+.detail-overlay.open{opacity:1;pointer-events:all}
+.detail-panel{position:fixed;top:0;right:0;width:540px;max-width:100vw;height:100vh;background:var(--surface);border-left:1px solid var(--border2);z-index:101;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.detail-panel.open{transform:translateX(0)}
+.dp-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px;flex-shrink:0}
+.dp-close{width:32px;height:32px;border-radius:8px;background:rgba(232,223,200,.06);border:1px solid var(--border);color:var(--muted);cursor:pointer;display:grid;place-items:center;flex-shrink:0;transition:all .15s;margin-left:auto}
+.dp-close:hover{background:rgba(200,124,80,.1);border-color:var(--warn);color:var(--warn)}
+.dp-sev-icon{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;flex-shrink:0}
+.dp-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;line-height:1.3;margin-bottom:5px}
+.dp-meta{font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.dp-meta-sep{color:var(--border2)}
+.dp-body{overflow-y:auto;flex:1;padding:20px 24px}
+.dp-section{margin-bottom:22px}
+.dp-section-label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(194,160,114,.5);margin-bottom:10px}
+.dp-summary{font-size:13px;line-height:1.7;color:rgba(232,223,200,.8);background:var(--surface2);border-radius:10px;padding:14px 16px}
+.dp-tags{display:flex;flex-wrap:wrap;gap:6px}
+.dp-tag{font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(194,160,114,.1);border:1px solid rgba(194,160,114,.2);color:var(--accent)}
+.dp-sops{display:flex;flex-direction:column;gap:8px}
+.dp-sop-row{display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:8px;padding:10px 14px}
+.dp-sop-id{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);background:rgba(194,160,114,.1);padding:2px 7px;border-radius:5px;flex-shrink:0}
+.dp-sop-name{font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dp-sop-rel{font-size:10px;color:var(--ok);flex-shrink:0}
+/* Checklist */
+.dp-checklist{display:flex;flex-direction:column;gap:6px}
+.dp-check-item{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:var(--surface2);border-radius:10px;border:1px solid transparent;transition:border-color .15s}
+.dp-check-item.done{opacity:.55}
+.dp-check-item.pri-critical{border-left:2px solid var(--warn)}
+.dp-check-item.pri-important{border-left:2px solid var(--gold)}
+.dp-check-box{width:20px;height:20px;border-radius:5px;border:1px solid var(--border2);display:grid;place-items:center;flex-shrink:0;margin-top:1px;transition:all .15s;background:transparent}
+.dp-check-item.done .dp-check-box{background:var(--ok);border-color:var(--ok)}
+.dp-check-content{flex:1;min-width:0}
+.dp-check-step{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.dp-check-title{font-size:13px;font-weight:500;margin-bottom:4px;line-height:1.4}
+.dp-check-item.done .dp-check-title{text-decoration:line-through;color:var(--muted)}
+.dp-check-detail{font-size:11px;color:rgba(232,223,200,.5);line-height:1.6}
+.dp-check-ref{font-size:10px;color:var(--accent);margin-top:5px;font-style:italic}
+.dp-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0}
+.dp-btn{flex:1;padding:11px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;transition:all .15s;letter-spacing:.03em}
+.dp-btn-primary{background:linear-gradient(135deg,var(--accent3),var(--accent2));color:#0a0d15}
+.dp-btn-primary:hover{opacity:.9}
+.dp-btn-secondary{background:rgba(232,223,200,.06);border:1px solid var(--border);color:var(--muted)}
+.dp-btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.dp-progress{height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;margin-bottom:12px}
+.dp-progress-bar{height:100%;background:linear-gradient(90deg,var(--accent3),var(--accent2));border-radius:2px;transition:width .4s}
+.dp-loading{text-align:center;padding:48px 24px;color:var(--muted);font-size:12px}
+.dp-spinner{width:28px;height:28px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 @media(max-width:900px){
   #appScreen.visible{grid-template-columns:1fr}
   .sidebar{display:none}
   .metrics{grid-template-columns:1fr 1fr}
+  .detail-panel{width:100vw}
 }
 </style>
 </head>
@@ -305,11 +355,34 @@ a{color:inherit;text-decoration:none}
 </div><!-- /appScreen -->
 
 <div class="toast" id="toast"></div>
+
+<!-- DETAIL OVERLAY + PANEL -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="dp-header" id="dpHeader">
+    <div class="dp-sev-icon" id="dpSevIcon"></div>
+    <div style="flex:1;min-width:0">
+      <div class="dp-title" id="dpTitle">Loading…</div>
+      <div class="dp-meta" id="dpMeta"></div>
+    </div>
+    <button class="dp-close" onclick="closeDetail()" title="Close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="dp-body" id="dpBody">
+    <div class="dp-loading"><div class="dp-spinner"></div>Loading details…</div>
+  </div>
+  <div class="dp-footer" id="dpFooter" style="display:none">
+    <button class="dp-btn dp-btn-secondary" id="dpReopenBtn" onclick="toggleComplete()" style="display:none">↩ Re-open</button>
+    <button class="dp-btn dp-btn-primary" id="dpCompleteBtn" onclick="toggleComplete()">Mark Complete</button>
+  </div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
 <script>
-var session = null;
+var session  = null;
 var dashData = null;
+var currentAnalysis = null;
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 function doLogin() {
@@ -317,27 +390,17 @@ function doLogin() {
   var pass  = document.getElementById('loginPassword').value;
   var errEl = document.getElementById('loginError');
   errEl.style.display = 'none';
-
   fetch('/api/login', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({email: email, password: pass})
   })
-  .then(function(r){
-    console.log('Login response status:', r.status);
-    return r.json();
-  })
+  .then(function(r){ return r.json(); })
   .then(function(data) {
-    console.log('Login data:', JSON.stringify(data).substring(0,200));
-    if (data.error) {
-      errEl.textContent = data.error;
-      errEl.style.display = 'block';
-      return;
-    }
+    if (data.error) { errEl.textContent = data.error; errEl.style.display = 'block'; return; }
     if (data.role === 'worker') {
       errEl.textContent = 'This account does not have dashboard access. Use the field app.';
-      errEl.style.display = 'block';
-      return;
+      errEl.style.display = 'block'; return;
     }
     session = data;
     sessionStorage.setItem('meridian_session', JSON.stringify(data));
@@ -357,18 +420,15 @@ function showApp() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appScreen').classList.add('visible');
   var companyName = (session.company && session.company.name) || 'Dashboard';
-  document.getElementById('topCompany').textContent = '';
-  document.getElementById('topUser').textContent    = session.full_name || session.email;
+  document.getElementById('topUser').textContent = session.full_name || session.email;
   var dcn = document.getElementById('dashCompanyName');
   if (dcn) dcn.textContent = companyName;
   loadDashboard();
   loadSops();
   loadTeam();
-  // Auto-refresh alerts every 30s
   setInterval(loadDashboard, 30000);
 }
 
-// Enter key on login
 document.getElementById('loginPassword').addEventListener('keydown', function(e){
   if (e.key === 'Enter') doLogin();
 });
@@ -379,7 +439,6 @@ function showPage(name, el) {
   document.querySelectorAll('.sb-item').forEach(function(i){ i.classList.remove('active'); });
   document.getElementById('page-' + name).classList.add('active');
   if (el) el.classList.add('active');
-  // Reload data when switching to a page
   if (name === 'sops')      loadSops();
   if (name === 'team')      loadTeam();
   if (name === 'dashboard') loadDashboard();
@@ -388,7 +447,6 @@ function showPage(name, el) {
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
 function loadDashboard() {
   if (!session) return;
-  console.log('Loading dashboard, token:', session.token ? 'present' : 'MISSING');
   fetch('/api/dashboard', {
     method: 'POST',
     headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
@@ -398,22 +456,16 @@ function loadDashboard() {
   .then(function(data) {
     dashData = data;
     var c = data.counts || {};
-    document.getElementById('mTotal').textContent = c.total || 0;
-    document.getElementById('mHigh').textContent  = c.high  || 0;
-    document.getElementById('mMed').textContent   = c.medium|| 0;
-    document.getElementById('mLow').textContent   = c.low   || 0;
+    document.getElementById('mTotal').textContent = c.total  || 0;
+    document.getElementById('mHigh').textContent  = c.high   || 0;
+    document.getElementById('mMed').textContent   = c.medium || 0;
+    document.getElementById('mLow').textContent   = c.low    || 0;
 
-    // Alert badge
     var alerts = data.alerts || [];
     var badge  = document.getElementById('alertBadge');
-    if (alerts.length > 0) {
-      badge.textContent  = alerts.length;
-      badge.style.display = 'flex';
-    } else {
-      badge.style.display = 'none';
-    }
+    badge.textContent   = alerts.length;
+    badge.style.display = alerts.length > 0 ? 'flex' : 'none';
 
-    // Alert banners
     var sec = document.getElementById('alertsSection');
     sec.innerHTML = '';
     alerts.forEach(function(a) {
@@ -421,14 +473,13 @@ function loadDashboard() {
       div.className = 'alert-banner';
       div.innerHTML =
         '<div style="flex-shrink:0;margin-top:2px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c87c50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>' +
-        '<div class="ab-body"><div class="ab-title">' + (a.message||'High severity issue reported') + '</div>' +
+        '<div class="ab-body"><div class="ab-title">' + esc(a.message||'High severity issue reported') + '</div>' +
         '<div class="ab-desc">' + fmtTime(a.sent_at) + '</div>' +
         '<button class="btn-dismiss" onclick="dismissAlert(\'' + a.id + '\',this.parentNode.parentNode)">Dismiss</button></div>' +
         '<div class="ab-time">' + fmtTimeShort(a.sent_at) + '</div>';
       sec.appendChild(div);
     });
 
-    // Activity feed
     renderFeed(data.analyses || [], 'activityFeed');
     renderFeed(data.analyses || [], 'activityFeedFull');
   })
@@ -438,26 +489,35 @@ function loadDashboard() {
 function renderFeed(analyses, elId) {
   var el = document.getElementById(elId);
   if (!analyses.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><h3>No activity yet</h3><p>Analyses from field workers will appear here.</p></div>';
+    el.innerHTML = '<div class="empty"><div class="empty-icon">&#x1F4CB;</div><h3>No activity yet</h3><p>Analyses from field workers will appear here.</p></div>';
     return;
   }
   el.innerHTML = '';
   analyses.forEach(function(a) {
     var sev    = (a.severity||'LOW').toUpperCase();
     var sevKey = sev==='HIGH'?'h':sev==='MEDIUM'?'m':'l';
-    var sevIcon = sev==='HIGH'
+    var sevIcon = sevKey==='h'
       ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c87c50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>'
-      : sev==='MEDIUM'
+      : sevKey==='m'
       ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d4ac50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
       : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7aab6e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
-    var worker = a.worker_name || (a.users && a.users.full_name) || 'Unknown worker';
+    var worker    = a.worker_name || 'Unknown worker';
+    var isComplete = !!a.completed;
     var div = document.createElement('div');
     div.className = 'activity-item';
+    div.setAttribute('data-id', a.id);
     div.innerHTML =
       '<div class="ai-sev sev-' + sevKey + '">' + sevIcon + '</div>' +
-      '<div class="ai-body"><div class="ai-title">' + (a.issue_title||'Issue') + '</div>' +
-      '<div class="ai-meta"><span>' + worker + '</span><span>' + fmtTime(a.created_at) + '</span></div></div>' +
-      '<div class="ai-right"><span class="sev-pill ' + sevKey + '">' + sev + '</span></div>';
+      '<div class="ai-body">' +
+        '<div class="ai-title">' + esc(a.issue_title||'Issue') + '</div>' +
+        '<div class="ai-meta"><span>' + esc(worker) + '</span><span>' + fmtTime(a.created_at) + '</span>' +
+        (isComplete ? '<span style="color:var(--ok)">&#x2713; Complete</span>' : '') +
+        '</div></div>' +
+      '<div class="ai-right">' +
+        '<span class="sev-pill ' + sevKey + '">' + sev + '</span>' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);margin-top:4px"><polyline points="9 18 15 12 9 6"/></svg>' +
+      '</div>';
+    div.onclick = (function(id){ return function(){ openDetail(id); }; })(a.id);
     el.appendChild(div);
   });
 }
@@ -470,6 +530,162 @@ function dismissAlert(id, el) {
   }).then(function(){ el.remove(); });
 }
 
+// ── DETAIL PANEL ──────────────────────────────────────────────────────────────
+function openDetail(analysisId) {
+  document.getElementById('detailOverlay').classList.add('open');
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('dpTitle').textContent = 'Loading…';
+  document.getElementById('dpMeta').innerHTML = '';
+  document.getElementById('dpSevIcon').innerHTML = '';
+  document.getElementById('dpBody').innerHTML = '<div class="dp-loading"><div class="dp-spinner"></div>Loading details…</div>';
+  document.getElementById('dpFooter').style.display = 'none';
+  document.body.style.overflow = 'hidden';
+
+  fetch('/api/analyses/detail', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
+    body: JSON.stringify({analysis_id: analysisId})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if (data.error) { showToast('Error: ' + data.error); closeDetail(); return; }
+    currentAnalysis = data.analysis;
+    renderDetailPanel(data.analysis, data.checklist || []);
+  })
+  .catch(function(){ showToast('Could not load details'); closeDetail(); });
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('open');
+  document.getElementById('detailPanel').classList.remove('open');
+  document.body.style.overflow = '';
+  currentAnalysis = null;
+}
+
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeDetail(); });
+
+function renderDetailPanel(a, checklist) {
+  var sev      = (a.severity||'LOW').toUpperCase();
+  var sevKey   = sev==='HIGH'?'h':sev==='MEDIUM'?'m':'l';
+  var sevColor = sevKey==='h'?'var(--warn)':sevKey==='m'?'var(--gold)':'var(--ok)';
+  var sevBg    = sevKey==='h'?'rgba(200,124,80,.2)':sevKey==='m'?'rgba(212,172,80,.15)':'rgba(122,171,110,.15)';
+
+  var icon = document.getElementById('dpSevIcon');
+  icon.style.background = sevBg;
+  icon.innerHTML = sevKey==='h'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+sevColor+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+    : sevKey==='m'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+sevColor+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+sevColor+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+
+  document.getElementById('dpTitle').textContent = a.issue_title || 'Field Issue';
+  var worker = a.worker_name || 'Unknown worker';
+  document.getElementById('dpMeta').innerHTML =
+    '<span>' + esc(worker) + '</span>' +
+    '<span class="dp-meta-sep">·</span>' +
+    '<span>' + fmtTime(a.created_at) + '</span>' +
+    '<span class="dp-meta-sep">·</span>' +
+    '<span style="color:'+sevColor+';font-weight:600">' + sev + '</span>' +
+    (a.completed ? '<span class="dp-meta-sep">·</span><span style="color:var(--ok)">✓ Complete</span>' : '');
+
+  var html = '';
+
+  if (a.issue_desc) {
+    html += '<div class="dp-section">' +
+      '<div class="dp-section-label">Issue Description</div>' +
+      '<div class="dp-summary">' + esc(a.issue_desc) + '</div></div>';
+  }
+
+  if (a.summary) {
+    html += '<div class="dp-section">' +
+      '<div class="dp-section-label">AI Analysis</div>' +
+      '<div class="dp-summary">' + esc(a.summary) + '</div></div>';
+  }
+
+  var tags = a.tags || [];
+  if (typeof tags === 'string') { try { tags = JSON.parse(tags); } catch(e){ tags=[]; } }
+  if (tags.length) {
+    html += '<div class="dp-section"><div class="dp-section-label">Tags</div><div class="dp-tags">' +
+      tags.map(function(t){ return '<span class="dp-tag">' + esc(t) + '</span>'; }).join('') +
+      '</div></div>';
+  }
+
+  var matchedSops = a.matched_sops || [];
+  if (typeof matchedSops === 'string') { try { matchedSops = JSON.parse(matchedSops); } catch(e){ matchedSops=[]; } }
+  if (matchedSops.length) {
+    html += '<div class="dp-section"><div class="dp-section-label">Matched SOPs</div><div class="dp-sops">';
+    matchedSops.forEach(function(s) {
+      html += '<div class="dp-sop-row">' +
+        '<span class="dp-sop-id">' + esc(s.id||'') + '</span>' +
+        '<span class="dp-sop-name">' + esc(s.name||s.id||'') + '</span>' +
+        (s.relevance ? '<span class="dp-sop-rel">' + s.relevance + '%</span>' : '') +
+        '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  var done  = checklist.filter(function(i){ return i.completed; }).length;
+  var total = checklist.length;
+  if (total > 0) {
+    var pct = Math.round(done / total * 100);
+    html += '<div class="dp-section">' +
+      '<div class="dp-section-label">Repair Checklist — ' + done + ' / ' + total + ' steps complete</div>' +
+      '<div class="dp-progress"><div class="dp-progress-bar" style="width:' + pct + '%"></div></div>' +
+      '<div class="dp-checklist">';
+    checklist.forEach(function(item) {
+      var pri = (item.priority||'standard').toLowerCase();
+      var priLabel = pri==='critical'
+        ? ' · <span style="color:var(--warn);font-size:9px">CRITICAL</span>'
+        : pri==='important'
+        ? ' · <span style="color:var(--gold);font-size:9px">IMPORTANT</span>'
+        : '';
+      html += '<div class="dp-check-item' + (item.completed?' done':'') + ' pri-' + pri + '">' +
+        '<div class="dp-check-box">' +
+        (item.completed ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '') +
+        '</div>' +
+        '<div class="dp-check-content">' +
+          '<div class="dp-check-step">Step ' + (item.step||'—') + priLabel + '</div>' +
+          '<div class="dp-check-title">' + esc(item.title||'') + '</div>' +
+          (item.detail ? '<div class="dp-check-detail">' + esc(item.detail) + '</div>' : '') +
+          (item.ref    ? '<div class="dp-check-ref">Ref: ' + esc(item.ref) + '</div>' : '') +
+        '</div></div>';
+    });
+    html += '</div></div>';
+  } else {
+    html += '<div class="dp-section"><div class="dp-section-label">Checklist</div>' +
+      '<div style="font-size:12px;color:var(--muted);padding:12px 0">No checklist items recorded for this analysis.</div></div>';
+  }
+
+  document.getElementById('dpBody').innerHTML = html;
+
+  var footer = document.getElementById('dpFooter');
+  footer.style.display = 'flex';
+  var completeBtn = document.getElementById('dpCompleteBtn');
+  var reopenBtn   = document.getElementById('dpReopenBtn');
+  if (a.completed) {
+    completeBtn.style.display = 'none';
+    reopenBtn.style.display   = 'flex';
+  } else {
+    completeBtn.style.display = 'flex';
+    reopenBtn.style.display   = 'none';
+  }
+}
+
+function toggleComplete() {
+  if (!currentAnalysis) return;
+  var reopen = !!currentAnalysis.completed;
+  fetch('/api/analyses/complete', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
+    body: JSON.stringify({analysis_id: currentAnalysis.id, reopen: reopen})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if (data.ok) { showToast(reopen ? 'Issue re-opened' : 'Marked complete'); closeDetail(); loadDashboard(); }
+  })
+  .catch(function(){ showToast('Error updating status'); });
+}
+
 // ── SOPs ──────────────────────────────────────────────────────────────────────
 function loadSops() {
   if (!session) return;
@@ -478,21 +694,15 @@ function loadSops() {
     headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
     body: '{}'
   })
-  .then(function(r){
-    console.log('GET SOPs status:', r.status);
-    return r.json();
-  })
-  .then(function(data) {
-    console.log('SOPs received:', data);
-    renderSops(data.sops || []);
-  })
-  .catch(function(e){ console.error('loadSops error:', e); showToast('Error loading SOPs: ' + e.message); });
+  .then(function(r){ return r.json(); })
+  .then(function(data){ renderSops(data.sops || []); })
+  .catch(function(e){ showToast('Error loading SOPs: ' + e.message); });
 }
 
 function renderSops(sops) {
   var el = document.getElementById('sopListEl');
   if (!sops.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📄</div><h3>No SOPs yet</h3><p>Upload your first SOP above.</p></div>';
+    el.innerHTML = '<div class="empty"><div class="empty-icon">&#x1F4C4;</div><h3>No SOPs yet</h3><p>Upload your first SOP above.</p></div>';
     return;
   }
   el.innerHTML = '';
@@ -503,10 +713,10 @@ function renderSops(sops) {
     div.innerHTML =
       '<span class="sop-cat cat-' + (sop.category||'ops') + '">' + (catLabels[sop.category]||sop.category) + '</span>' +
       '<div class="sop-body">' +
-        '<div class="sop-name">' + sop.name + '</div>' +
-        '<div class="sop-meta"><span>' + (sop.sop_id||sop.id.substring(0,8)) + '</span>' +
-        (sop.version?'<span>v'+sop.version+'</span>':'') + '</div>' +
-        '<div class="sop-preview">' + (sop.content||'').substring(0,150) + '...</div>' +
+        '<div class="sop-name">' + esc(sop.name) + '</div>' +
+        '<div class="sop-meta"><span>' + esc(sop.sop_id||sop.id.substring(0,8)) + '</span>' +
+        (sop.version ? '<span>v'+esc(sop.version)+'</span>' : '') + '</div>' +
+        '<div class="sop-preview">' + esc((sop.content||'').substring(0,150)) + '…</div>' +
       '</div>' +
       '<div class="sop-actions"><button class="sop-btn sop-btn-del" onclick="deleteSop(\'' + sop.id + '\',this)">Delete</button></div>';
     el.appendChild(div);
@@ -528,9 +738,8 @@ async function uploadSop(e) {
   var file = e.target.files[0];
   if (!file) return;
   e.target.value = '';
-  showToast('Extracting text...');
-  var text = '';
-  var ext  = file.name.split('.').pop().toLowerCase();
+  showToast('Extracting text…');
+  var text = '', ext = file.name.split('.').pop().toLowerCase();
   try {
     if (ext === 'txt') {
       text = await new Promise(function(res,rej){var r=new FileReader();r.onload=function(e){res(e.target.result);};r.onerror=rej;r.readAsText(file);});
@@ -538,41 +747,29 @@ async function uploadSop(e) {
       var buf = await new Promise(function(res,rej){var r=new FileReader();r.onload=function(e){res(e.target.result);};r.onerror=rej;r.readAsArrayBuffer(file);});
       var result = await mammoth.extractRawText({arrayBuffer: buf});
       text = result.value;
-    } else {
-      showToast('Use DOCX or TXT format'); return;
-    }
+    } else { showToast('Use DOCX or TXT format'); return; }
     if (!text.trim()) { showToast('No text found in file'); return; }
     var name = file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
     name = name.replace(/\b\w/g,function(c){return c.toUpperCase();});
-    var lower = text.toLowerCase();
-    var cat   = 'ops';
+    var lower = text.toLowerCase(), cat = 'ops';
     if (lower.indexOf('safety')>-1||lower.indexOf('hazard')>-1) cat='safety';
     else if (lower.indexOf('maintenance')>-1||lower.indexOf('repair')>-1) cat='maint';
     else if (lower.indexOf('quality')>-1||lower.indexOf('defect')>-1) cat='quality';
     var idMatch = text.match(/[A-Z]{2,5}-[A-Z]{2,6}-\d{3,4}/);
-    console.log('Uploading SOP to server:', name, '| token:', session.token ? 'present':'MISSING');
     fetch('/api/sops/add', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
       body: JSON.stringify({name:name, sop_id:idMatch?idMatch[0]:'', category:cat, content:text.trim(), source:file.name, version:'1.0'})
     })
-    .then(function(r){
-      console.log('Add SOP HTTP status:', r.status);
-      return r.json();
-    })
+    .then(function(r){ return r.json(); })
     .then(function(data){
-      console.log('Add SOP response:', JSON.stringify(data).substring(0,300));
       if (data.error) { showToast('Server error: '+JSON.stringify(data.error)); return; }
       showToast('SOP added: ' + name);
       setTimeout(function(){ loadSops(); }, 800);
       showPage('sops', document.querySelector('.sb-item[onclick*="sops"]'));
     })
-    .catch(function(e){ console.error('Fetch error:', e); showToast('Network error: '+e.message); })
-    .catch(function(){showToast('Error saving SOP');});
-  } catch(err) {
-    console.error('Upload error:', err);
-    showToast('Error: '+(err.message||String(err)));
-  }
+    .catch(function(e){ showToast('Network error: '+e.message); });
+  } catch(err) { showToast('Error: '+(err.message||String(err))); }
 }
 
 // ── TEAM ──────────────────────────────────────────────────────────────────────
@@ -591,7 +788,7 @@ function loadTeam() {
 function renderTeam(team) {
   var el = document.getElementById('teamGrid');
   if (!team.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><h3>No team members yet</h3></div>';
+    el.innerHTML = '<div class="empty"><div class="empty-icon">&#x1F465;</div><h3>No team members yet</h3></div>';
     return;
   }
   el.innerHTML = '';
@@ -602,8 +799,8 @@ function renderTeam(team) {
     div.innerHTML =
       '<div class="tc-avatar">' + initials + '</div>' +
       '<div class="tc-body">' +
-        '<div class="tc-name">' + (m.full_name||'Unknown') + '</div>' +
-        '<div class="tc-email">' + (m.email||'') + '</div>' +
+        '<div class="tc-name">' + esc(m.full_name||'Unknown') + '</div>' +
+        '<div class="tc-email">' + esc(m.email||'') + '</div>' +
         '<span class="tc-role role-' + (m.role||'worker') + '">' + (m.role||'worker') + '</span>' +
       '</div>';
     el.appendChild(div);
@@ -632,20 +829,21 @@ function inviteMember() {
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 function fmtTime(ts) {
   if (!ts) return '';
-  var d = new Date(ts);
-  var diff = Math.floor((Date.now()-d)/1000);
-  if (diff < 60)   return diff + 's ago';
-  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
-  if (diff < 86400)return Math.floor(diff/3600) + 'h ago';
+  var d = new Date(ts), diff = Math.floor((Date.now()-d)/1000);
+  if (diff < 60)    return diff + 's ago';
+  if (diff < 3600)  return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
   return d.toLocaleDateString();
 }
 function fmtTimeShort(ts) {
   if (!ts) return '';
-  return new Date(ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 }
-
 function showToast(msg) {
   var t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -657,11 +855,8 @@ function showToast(msg) {
   var saved = sessionStorage.getItem('meridian_session');
   if (saved) {
     session = JSON.parse(saved);
-    if (session && session.role !== 'worker') {
-      showApp();
-    } else {
-      sessionStorage.removeItem('meridian_session');
-    }
+    if (session && session.role !== 'worker') { showApp(); }
+    else { sessionStorage.removeItem('meridian_session'); }
   }
 })();
 </script>
