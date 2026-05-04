@@ -453,11 +453,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def handle_invite(self):
         token = self.get_token()
         body  = self.read_body()
+        print(f"[invite] Request received — email: {body.get('email')} role: {body.get('role')}")
         if not token:
+            print("[invite] No token — rejecting")
             self.send_json(401, {"error": "Not authenticated"}); return
         auth_user, profile = get_user_from_token(token)
         if not profile or profile.get("role") not in ("manager","admin"):
+            print(f"[invite] Auth failed — profile: {profile}")
             self.send_json(403, {"error": "Managers only"}); return
+        print(f"[invite] Auth OK — manager: {profile.get('full_name')} company: {profile.get('company_id')}")
         url = SUPABASE_URL.rstrip("/") + "/auth/v1/admin/users"
         headers = {
             "Content-Type":  "application/json",
@@ -474,8 +478,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         try:
             with urllib.request.urlopen(req, timeout=15) as r:
                 new_user = json.loads(r.read())
+            print(f"[invite] Supabase account created — id: {new_user.get('id')}")
         except urllib.error.HTTPError as e:
             err_body = e.read().decode()
+            print(f"[invite] Supabase error {e.code}: {err_body}")
             try:
                 err_json = json.loads(err_body)
             except Exception:
@@ -483,9 +489,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             if err_json.get("error_code") == "email_exists" or e.code == 422:
                 self.send_json(409, {"error": "A user with this email address is already registered. Check the Team list or delete the existing account in Supabase first."})
             else:
-                print(f"[invite] Supabase error {e.code}: {err_body}")
                 self.send_json(400, {"error": "Could not create account. Check Render logs for details."})
             return
+        except Exception as ex:
+            print(f"[invite] Unexpected error creating account: {ex}")
+            self.send_json(500, {"error": str(ex)}); return
         supabase("POST", "/users", {
             "id":         new_user["id"],
             "company_id": profile["company_id"],
@@ -513,6 +521,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             app_url       = app_url,
         )
 
+        print(f"[invite] Complete — user_id: {new_user['id']} email_sent: {email_sent}")
         self.send_json(200, {"ok": True, "user_id": new_user["id"], "email_sent": email_sent})
 
     def handle_team_list(self):
