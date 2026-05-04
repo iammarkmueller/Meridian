@@ -19,6 +19,7 @@ import socketserver
 API_KEY      = os.environ.get("ANTHROPIC_API_KEY", "")
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
+RESEND_KEY   = os.environ.get("RESEND_API_KEY", "")
 PORT         = int(os.environ.get("PORT", 8765))
 DIR          = os.path.dirname(os.path.abspath(__file__))
 
@@ -76,6 +77,130 @@ def get_user_from_token(token):
         print("  get_user_from_token error:", ex)
         return None, None
 
+
+
+# ── RESEND EMAIL ─────────────────────────────────────────────────────────────
+
+def send_invite_email(to_email, to_name, company_name, manager_name,
+                      manager_email, role, temp_password, app_url):
+    """Send a branded Meridian invite email via Resend."""
+    if not RESEND_KEY:
+        print("[email] RESEND_API_KEY not set — skipping invite email")
+        return False
+
+    role_label = {"admin": "Admin", "manager": "Manager"}.get(role, "Field Worker")
+    first_name = to_name.split()[0] if to_name else "there"
+
+    html = (
+        "<!DOCTYPE html>"
+        "<html lang='en'><head><meta charset='UTF-8'>"
+        "<title>You have been invited to Meridian</title></head>"
+        "<body style='margin:0;padding:0;background:#f4f1eb;font-family:Georgia,serif'>"
+        "<table width='100%' cellpadding='0' cellspacing='0' style='background:#f4f1eb;padding:32px 16px'>"
+        "<tr><td align='center'>"
+        "<table width='580' cellpadding='0' cellspacing='0' style='max-width:580px;width:100%'>"
+
+        # HEADER
+        "<tr><td style='background:#05172f;border-radius:12px 12px 0 0;padding:32px 40px 28px;text-align:center'>"
+        "<p style='margin:0 0 18px;font-family:Georgia,serif;font-size:20px;font-weight:700;color:#e8dfc8;letter-spacing:.14em'>&#9830; MERIDIAN</p>"
+        "<div style='width:40px;height:1.5px;background:#C2A072;opacity:.6;margin:0 auto 18px'></div>"
+        f"<p style='margin:0;font-family:Georgia,serif;font-size:22px;font-weight:700;color:#e8dfc8;line-height:1.35'>You're invited to join<br>{company_name}</p>"
+        "<p style='margin:8px 0 0;font-family:Arial,sans-serif;font-size:13px;color:#C2A072;letter-spacing:.04em'>Field Intelligence Platform</p>"
+        "</td></tr>"
+
+        # BODY
+        "<tr><td style='background:#ffffff;padding:36px 40px;font-family:Arial,sans-serif'>"
+        f"<p style='margin:0 0 12px;font-size:15px;color:#1a1410;font-weight:bold'>Hi {first_name},</p>"
+        f"<p style='margin:0 0 20px;font-size:14px;color:#3a3028;line-height:1.75'>"
+        f"<strong>{manager_name}</strong> has added you to <strong>{company_name}</strong> on Meridian &mdash; "
+        "your team's AI-powered field intelligence platform. You'll be able to photograph job site issues, "
+        "get instant SOP-matched repair checklists, and log field reports directly from your phone.</p>"
+
+        # CREDENTIALS CARD
+        "<table width='100%' cellpadding='0' cellspacing='0' style='background:#f7f4ef;border-left:3px solid #C2A072;border-radius:0 8px 8px 0;margin-bottom:24px'>"
+        "<tr><td style='padding:16px 20px'>"
+        "<table width='100%' cellpadding='0' cellspacing='0'>"
+        f"<tr><td style='font-size:12px;color:#7a6e62;width:96px;padding:5px 0'>Your email</td><td style='font-size:13px;color:#1a1410;font-weight:bold;padding:5px 0'>{to_email}</td></tr>"
+        f"<tr><td style='font-size:12px;color:#7a6e62;padding:5px 0'>Temp password</td><td style='font-size:14px;color:#1a1410;font-weight:bold;padding:5px 0;font-family:Courier New,monospace;letter-spacing:.06em'>{temp_password}</td></tr>"
+        f"<tr><td style='font-size:12px;color:#7a6e62;padding:5px 0'>Your role</td><td style='font-size:13px;color:#1a1410;font-weight:bold;padding:5px 0'>{role_label}</td></tr>"
+        f"<tr><td style='font-size:12px;color:#7a6e62;padding:5px 0'>Company</td><td style='font-size:13px;color:#1a1410;font-weight:bold;padding:5px 0'>{company_name}</td></tr>"
+        "</table></td></tr></table>"
+
+        # CTA BUTTON
+        "<table width='100%' cellpadding='0' cellspacing='0' style='margin-bottom:28px'>"
+        "<tr><td align='center'>"
+        f"<a href='{app_url}' style='display:inline-block;background:#C2A072;color:#05172f;font-family:Georgia,serif;font-size:15px;font-weight:700;padding:14px 40px;border-radius:8px;text-decoration:none;letter-spacing:.04em'>Open Meridian &rarr;</a>"
+        "</td></tr></table>"
+
+        # STEPS
+        "<p style='margin:0 0 12px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#9a8a78'>Getting started</p>"
+        "<table width='100%' cellpadding='0' cellspacing='0' style='margin-bottom:24px'><tr><td>"
+        "<table cellpadding='0' cellspacing='0' style='margin-bottom:12px;width:100%'><tr>"
+        "<td style='width:26px;height:24px;background:#05172f;border-radius:50%;text-align:center;vertical-align:middle;font-size:11px;font-weight:700;color:#C2A072;font-family:Georgia,serif'>1</td>"
+        "<td style='padding-left:12px;font-size:13px;color:#3a3028;line-height:1.6'><strong style='color:#1a1410'>Sign in</strong> using your email and the temporary password above.</td>"
+        "</tr></table>"
+        "<table cellpadding='0' cellspacing='0' style='margin-bottom:12px;width:100%'><tr>"
+        "<td style='width:26px;height:24px;background:#05172f;border-radius:50%;text-align:center;vertical-align:middle;font-size:11px;font-weight:700;color:#C2A072;font-family:Georgia,serif'>2</td>"
+        "<td style='padding-left:12px;font-size:13px;color:#3a3028;line-height:1.6'><strong style='color:#1a1410'>Change your password</strong> immediately after signing in.</td>"
+        "</tr></table>"
+        "<table cellpadding='0' cellspacing='0' style='width:100%'><tr>"
+        "<td style='width:26px;height:24px;background:#05172f;border-radius:50%;text-align:center;vertical-align:middle;font-size:11px;font-weight:700;color:#C2A072;font-family:Georgia,serif'>3</td>"
+        "<td style='padding-left:12px;font-size:13px;color:#3a3028;line-height:1.6'><strong style='color:#1a1410'>Run your first analysis</strong> &mdash; photograph a site issue and get an instant SOP-matched checklist.</td>"
+        "</tr></table>"
+        "</td></tr></table>"
+
+        # SECURITY NOTICE
+        "<table width='100%' cellpadding='0' cellspacing='0' style='margin-bottom:24px'>"
+        f"<tr><td style='background:#f0ece3;border-radius:8px;padding:14px 18px;font-size:12px;color:#7a6e62;line-height:1.6'>"
+        f"<strong style='color:#5a4e42'>Security note:</strong> Meridian will never ask for your password over email or phone. "
+        f"If you did not expect this invitation, contact {manager_name} at "
+        f"<a href='mailto:{manager_email}' style='color:#8B6834'>{manager_email}</a> before signing in."
+        "</td></tr></table>"
+
+        f"<p style='margin:0;font-size:12px;color:#9a8a78;line-height:1.7'>Questions? Contact your manager at "
+        f"<a href='mailto:{manager_email}' style='color:#8B6834'>{manager_email}</a>.</p>"
+        "</td></tr>"
+
+        # FOOTER
+        "<tr><td style='background:#05172f;border-radius:0 0 12px 12px;padding:22px 40px;text-align:center'>"
+        "<p style='margin:0 0 6px;font-family:Georgia,serif;font-size:13px;color:#C2A072;letter-spacing:.1em'>MERIDIAN</p>"
+        f"<p style='margin:0;font-size:11px;color:rgba(194,160,114,.45);line-height:1.7'>"
+        f"AI Field Intelligence for the Trades &nbsp;&#9830;&nbsp; meridianfi.app<br>"
+        f"You received this because {manager_name} invited you to join their team.<br>"
+        "&copy; 2026 Meridian. All rights reserved.</p>"
+        "</td></tr>"
+
+        "</table></td></tr></table>"
+        "</body></html>"
+    )
+
+    payload = json.dumps({
+        "from":    "Meridian <team@meridianfi.app>",
+        "to":      [to_email],
+        "subject": f"You have been invited to join Meridian \u2014 {company_name}",
+        "html":    html,
+    }).encode()
+
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=payload,
+        headers={
+            "Content-Type":  "application/json",
+            "Authorization": "Bearer " + RESEND_KEY,
+        },
+        method="POST"
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as r:
+            result = json.loads(r.read())
+            print(f"[email] Invite sent to {to_email} — id: {result.get('id')}")
+            return True
+    except urllib.error.HTTPError as e:
+        print(f"[email] Resend error {e.code}: {e.read().decode()}")
+        return False
+    except Exception as ex:
+        print(f"[email] Unexpected error: {ex}")
+        return False
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -357,7 +482,28 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             "full_name":  body.get("full_name", ""),
             "role":       body.get("role", "worker"),
         })
-        self.send_json(200, {"ok": True, "user_id": new_user["id"]})
+
+        # Fetch company name for the email
+        _, companies = supabase("GET", "/companies?id=eq." + profile["company_id"] + "&select=name")
+        company_name = companies[0]["name"] if isinstance(companies, list) and companies else "your company"
+
+        # Derive app URL from the request Host header
+        host = self.headers.get("Host", "localhost")
+        scheme = "https" if "localhost" not in host else "http"
+        app_url = f"{scheme}://{host}"
+
+        email_sent = send_invite_email(
+            to_email      = body.get("email"),
+            to_name       = body.get("full_name", ""),
+            company_name  = company_name,
+            manager_name  = profile.get("full_name", "Your manager"),
+            manager_email = auth_user.get("email", ""),
+            role          = body.get("role", "worker"),
+            temp_password = body.get("password", "ChangeMe123!"),
+            app_url       = app_url,
+        )
+
+        self.send_json(200, {"ok": True, "user_id": new_user["id"], "email_sent": email_sent})
 
     def handle_team_list(self):
         token = self.get_token()
