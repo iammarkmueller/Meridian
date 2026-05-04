@@ -854,16 +854,7 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
 <div class="toast" id="toast"></div>
 
 <script>
-var sops=[
-  {id:'SOP-MAINT-001',name:'Repairing Cracks in Cement/Concrete Surfaces',category:'maint',imported:true,version:'1.0',effectiveDate:'April 15, 2026',
-   content:'PURPOSE: Safe and effective steps for inspecting, preparing, and repairing cracks in cement and concrete. SCOPE: Floors, driveways, sidewalks, patios, slabs, walls, foundations. Non-structural cracks only — cracks wider than 1/2 inch or with vertical displacement require a structural engineer. REQUIRED PPE: Safety glasses, chemical-resistant gloves, N95+ respirator (MANDATORY — silica dust causes silicosis), knee pads, slip-resistant footwear. ENVIRONMENT: 50-90F only. No rain within 24h. Keep bystanders away. CRACK TYPES: Hairline <1/8" use polyurethane caulk; Moderate 1/8-1/2" use vinyl patch or epoxy; Wide >1/2" needs engineer; Active/wet use hydraulic cement first; Spalling remove loose material then resurface. PROCEDURE Step 1 Assess: Inspect full length, measure width, photograph, check moisture, mark extent. Step 2 Prepare: Clear area, sweep, ventilate, don ALL PPE. Step 3 Open/Clean: Chisel hairline cracks to 1/4" min, undercut edges (wider at bottom), wire brush walls, vacuum all dust — surface must be clean and dry. Step 4 Bonding: Apply bonding agent if required, allow 5-15 min to tack. Step 5 Apply: Hairline/moderate use caulk gun at 45 deg overfill slightly tool flush. Wide cracks layer vinyl compound max 1/2" per layer. Active water use hydraulic cement plug held 3-5 min then standard repair. Step 6 Finish: Tool flush, match texture. Step 7 Cure: No foot traffic 24h, no vehicles 72h, cordon off area, mist in hot conditions. Step 8 Inspect: Check for voids delamination shrinkage after cure, photograph, log repair. ESCALATE if: crack >1/2", growing, vertical displacement, pattern cracking, or in structural element.'},
-  {id:'SOP-SAF-001',name:'Electrical Hazard & Lockout/Tagout',category:'safety',content:'Identify exposed wiring, burn marks, sparking. Isolate power at breaker. Apply LOTO. Call electrician. Steps: isolate hazard, alert personnel, lock out, tagout, test zero energy, notify supervisor, log.'},
-  {id:'SOP-MNT-012',name:'Hydraulic System Leak Inspection',category:'maint',content:'Inspect lines, fittings, seals for leaks. Stop equipment. Depressurize. Identify leak. Replace seals. Refill fluid. Pressure test.'},
-  {id:'SOP-OPS-033',name:'Machine Overheating Emergency Shutdown',category:'ops',content:'Signs: burning smell, heat alarms, discolored metal. Emergency stop. Cooldown 15-20min. Check coolant, fans. Supervisor approval to restart.'},
-  {id:'SOP-QA-019',name:'Surface Defect & Corrosion Assessment',category:'quality',content:'Inspect for rust, pitting, cracking. Measure area. Classify severity. Photograph. Log. Notify QA. Root cause. Corrective action.'},
-  {id:'SOP-SAF-008',name:'Chemical Spill Response',category:'safety',content:'Identify chemical. Evacuate 10m. Don PPE. SDS sheet. Contain spill. Absorb. Bag waste. Decontaminate. Incident report.'},
-  {id:'SOP-MNT-031',name:'Structural Crack & Weld Inspection',category:'maint',content:'Inspect welds, joints for cracks. Halt if structural crack. Tag out. NDT test. Notify engineer. Assess load. Plan repair.'}
-];
+var sops=[];
 
 var capturedImage=null,camStream=null,checkItems=[],analysisData=null,ticker=null,stepIdx=0;
 var progressSteps=[[10,'Compressing image...'],[28,'Scanning for issues...'],[50,'Matching SOPs...'],[72,'Building checklist...'],[88,'Finalising...']];
@@ -1059,7 +1050,7 @@ async function runAnalysis(){
 
     // Build request body
     var reqBody = {
-      model: 'claude-sonnet-4-5',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2048,
       messages: [{
         role: 'user',
@@ -1512,7 +1503,7 @@ function loadSopsFromServer() {
 renderSopBar();
       showToast('Loaded ' + serverSops.length + ' SOP' + (serverSops.length===1?'':'s') + ' from library');
     } else {
-      // No company SOPs yet — keep built-ins and show message
+      // No company SOPs yet
       showToast('No SOPs in library yet — add them via the dashboard');
     }
   })
