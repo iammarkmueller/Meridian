@@ -636,12 +636,13 @@ if __name__ == "__main__":
         print("Missing env vars: " + ", ".join(missing)); sys.exit(1)
 
     print("=" * 48)
-    print("  Meridian  |  http://localhost:" + str(PORT))
+    print("  Meridian  |  http://0.0.0.0:" + str(PORT))
+    print(f"  PORT env var = {os.environ.get('PORT', 'not set — using default')}")
     print("  Ctrl+C to stop")
     print("=" * 48)
 
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+    with socketserver.TCPServer(("0.0.0.0", PORT), Handler) as httpd:
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
