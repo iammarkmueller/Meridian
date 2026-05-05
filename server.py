@@ -243,10 +243,23 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             "/api/team/invite":        self.handle_invite,
             "/api/team/list":          self.handle_team_list,
         }
-        h = routes.get(self.path)
+        # Strip query string for routing
+        path = self.path.split("?")[0]
+        print(f"[POST] {path}")
+        h = routes.get(path)
         if h:
-            h()
+            try:
+                h()
+            except Exception as ex:
+                import traceback
+                print(f"[ERROR] Handler crashed on {path}:")
+                traceback.print_exc()
+                try:
+                    self.send_json(500, {"error": str(ex)})
+                except Exception:
+                    pass
         else:
+            print(f"[404] No route for {path}")
             self.send_error(404)
 
     def read_body(self):
