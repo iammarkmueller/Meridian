@@ -176,12 +176,13 @@ def send_invite_email(to_email, to_name, company_name, manager_name,
     )
 
     payload = json.dumps({
-        "from":    "Meridian <team@send.meridianfi.app>",
+        "from":    "Meridian <team@meridianfi.app>",
         "to":      [to_email],
         "subject": f"You have been invited to join Meridian \u2014 {company_name}",
         "html":    html,
     }).encode()
 
+    print(f"[email] Sending via Resend — to: {to_email} from: team@meridianfi.app key_prefix: {RESEND_KEY[:8] if RESEND_KEY else 'MISSING'}")
     req = urllib.request.Request(
         "https://api.resend.com/emails",
         data=payload,
@@ -197,7 +198,10 @@ def send_invite_email(to_email, to_name, company_name, manager_name,
             print(f"[email] Invite sent to {to_email} — id: {result.get('id')}")
             return True
     except urllib.error.HTTPError as e:
-        print(f"[email] Resend error {e.code}: {e.read().decode()}")
+        err_body = e.read().decode()
+        print(f"[email] Resend error {e.code}: {err_body}")
+        # Also log headers for debugging
+        print(f"[email] Resend response headers: {dict(e.headers)}")
         return False
     except Exception as ex:
         print(f"[email] Unexpected error: {ex}")
