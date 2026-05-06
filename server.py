@@ -14,6 +14,7 @@ import urllib.error
 import json
 import os
 import sys
+sys.stdout.reconfigure(line_buffering=True)  # Force immediate log flushing on Render
 import socketserver
 
 API_KEY      = os.environ.get("ANTHROPIC_API_KEY", "")
@@ -263,8 +264,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_error(404)
 
     def read_body(self):
-        length = int(self.headers.get("Content-Length", 0))
-        return json.loads(self.rfile.read(length)) if length else {}
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+            if not length:
+                return {}
+            raw = self.rfile.read(length)
+            print(f"[body] raw bytes: {raw[:200]}")
+            return json.loads(raw)
+        except Exception as ex:
+            print(f"[body] parse error: {ex}")
+            return {}
 
     def get_token(self):
         auth = self.headers.get("Authorization", "")
