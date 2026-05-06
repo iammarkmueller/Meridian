@@ -189,6 +189,80 @@ a{color:inherit;text-decoration:none}
 .empty h3{font-family:'Playfair Display',serif;font-size:16px;margin-bottom:6px;color:rgba(232,223,200,.5)}
 .empty p{font-size:12px;line-height:1.7}
 
+/* ── SOP BUILDER ── */
+.builder-layout{display:grid;grid-template-columns:260px 1fr;gap:16px;height:100%}
+.builder-sidebar{display:flex;flex-direction:column;gap:10px}
+.builder-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.builder-panel-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.builder-panel-title{font-family:"Playfair Display",serif;font-size:13px;font-weight:700;letter-spacing:.03em}
+.builder-panel-body{padding:16px}
+.trade-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.trade-btn{padding:10px 8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;transition:all .15s;text-align:center;font-family:"DM Sans",sans-serif}
+.trade-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(194,160,114,.05)}
+.trade-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(194,160,114,.1);font-weight:600}
+.trade-btn .trade-icon{font-size:18px;display:block;margin-bottom:4px}
+.template-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto}
+.template-item{padding:9px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:11px;cursor:pointer;transition:all .15s;text-align:left;font-family:"DM Sans",sans-serif;line-height:1.4}
+.template-item:hover{border-color:var(--accent);background:rgba(194,160,114,.05)}
+.template-item.active{border-color:var(--accent);background:rgba(194,160,114,.1);color:var(--accent)}
+.builder-main{display:flex;flex-direction:column;gap:0}
+.builder-steps{display:flex;border-bottom:1px solid var(--border);background:var(--surface)}
+.builder-step{padding:12px 20px;font-size:11px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.builder-step.active{color:var(--accent);border-bottom-color:var(--accent)}
+.builder-step.done{color:var(--ok)}
+.builder-step-num{width:18px;height:18px;border-radius:50%;background:var(--surface2);font-size:9px;display:grid;place-items:center;flex-shrink:0}
+.builder-step.active .builder-step-num{background:var(--accent);color:#0a0d15}
+.builder-step.done .builder-step-num{background:var(--ok);color:#0a0d15}
+.builder-content{padding:24px;flex:1;overflow-y:auto;background:var(--surface)}
+.builder-section{margin-bottom:24px}
+.builder-section-title{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.builder-section-title::after{content:"";flex:1;height:1px;background:var(--border)}
+.builder-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.builder-field{display:flex;flex-direction:column;gap:5px}
+.builder-field.full{grid-column:1/-1}
+.builder-label{font-size:11px;color:var(--muted);letter-spacing:.04em}
+.builder-input{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 12px;color:var(--text);font-size:12px;font-family:"DM Sans",sans-serif;transition:border-color .15s;width:100%}
+.builder-input:focus{outline:none;border-color:var(--accent)}
+.builder-textarea{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 12px;color:var(--text);font-size:12px;font-family:"DM Sans",sans-serif;resize:vertical;min-height:80px;width:100%;transition:border-color .15s}
+.builder-textarea:focus{outline:none;border-color:var(--accent)}
+.ppe-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ppe-check{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:7px;border:1px solid var(--border);cursor:pointer;transition:all .15s;font-size:11px;color:var(--muted)}
+.ppe-check.checked{border-color:var(--ok);color:var(--ok);background:rgba(122,171,110,.08)}
+.ppe-check input{display:none}
+.steps-list{display:flex;flex-direction:column;gap:8px}
+.step-row{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:start;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px}
+.step-num{width:28px;height:28px;border-radius:50%;background:rgba(194,160,114,.15);color:var(--accent);font-size:11px;font-weight:700;display:grid;place-items:center;flex-shrink:0;font-family:"Playfair Display",serif}
+.step-inputs{display:flex;flex-direction:column;gap:6px}
+.step-del{width:24px;height:24px;border-radius:5px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:all .15s;flex-shrink:0}
+.step-del:hover{border-color:var(--warn);color:var(--warn)}
+.add-step-btn{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;transition:all .15s;width:100%;font-family:"DM Sans",sans-serif}
+.add-step-btn:hover{border-color:var(--accent);color:var(--accent)}
+.warning-list{display:flex;flex-direction:column;gap:8px}
+.warning-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:rgba(200,124,80,.06);border:1px solid rgba(200,124,80,.2);border-radius:8px;padding:10px 12px}
+.warning-type{font-size:9px;padding:2px 7px;border-radius:4px;background:rgba(200,124,80,.15);color:var(--warn);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.builder-actions{display:flex;gap:10px;padding:16px 24px;border-top:1px solid var(--border);background:var(--surface)}
+.builder-btn{padding:10px 20px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:"DM Sans",sans-serif;transition:all .15s;letter-spacing:.03em}
+.builder-btn-primary{background:linear-gradient(135deg,var(--accent3),var(--accent2));color:#0a0d15}
+.builder-btn-primary:hover{opacity:.9}
+.builder-btn-secondary{background:rgba(194,160,114,.08);border:1px solid var(--border);color:var(--muted)}
+.builder-btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.builder-btn-ai{background:rgba(122,171,110,.1);border:1px solid rgba(122,171,110,.3);color:var(--ok)}
+.builder-btn-ai:hover{background:rgba(122,171,110,.18)}
+.builder-btn-ai.loading{opacity:.6;pointer-events:none}
+.ai-draft-area{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
+.ai-draft-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ok);margin-bottom:8px}
+.ai-draft-input{width:100%;background:transparent;border:none;color:var(--text);font-size:13px;font-family:"DM Sans",sans-serif;resize:none;min-height:60px;line-height:1.6}
+.ai-draft-input:focus{outline:none}
+.preview-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;font-size:12px;line-height:1.8;color:var(--text);white-space:pre-wrap;max-height:420px;overflow-y:auto;font-family:"DM Sans",sans-serif}
+.preview-box h2{font-family:"Playfair Display",serif;font-size:16px;color:var(--accent);margin-bottom:8px}
+.preview-box h3{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:14px 0 6px}
+.preview-box .warning-block{background:rgba(200,124,80,.08);border-left:2px solid var(--warn);padding:8px 12px;border-radius:0 6px 6px 0;margin:8px 0;font-size:11px}
+:root.light .builder-input{background:var(--surface2)}
+:root.light .builder-textarea{background:var(--surface2)}
+:root.light .step-row{background:var(--surface2)}
+:root.light .ai-draft-area{background:var(--surface2)}
+:root.light .preview-box{background:var(--surface2)}
+
 /* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:10px 20px;font-size:12px;border-radius:20px;transition:transform .25s;z-index:200;white-space:nowrap;opacity:0}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
@@ -318,6 +392,10 @@ a{color:inherit;text-decoration:none}
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       SOP Library
     </div>
+    <div class="sb-item" onclick="showPage('builder',this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      SOP Builder
+    </div>
     <div class="sb-item" onclick="showPage('team',this)">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Team
@@ -364,6 +442,75 @@ a{color:inherit;text-decoration:none}
       </div>
       <div class="sop-list" id="sopListEl"><div class="empty"><div class="empty-icon">📄</div><h3>No SOPs yet</h3><p>Upload your first SOP above.</p></div></div>
     </div>
+
+    <!-- SOP BUILDER PAGE -->
+    <div class="page" id="page-builder">
+      <div class="builder-layout">
+
+        <!-- Left sidebar: trade + template picker -->
+        <div class="builder-sidebar">
+          <div class="builder-panel">
+            <div class="builder-panel-head">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              <span class="builder-panel-title">Select Trade</span>
+            </div>
+            <div class="builder-panel-body">
+              <div class="trade-grid" id="tradeGrid">
+                <button class="trade-btn active" onclick="selectTrade('masonry',this)"><span class="trade-icon">🧱</span>Concrete &amp; Masonry</button>
+                <button class="trade-btn" onclick="selectTrade('plumbing',this)"><span class="trade-icon">🔧</span>Plumbing</button>
+                <button class="trade-btn" onclick="selectTrade('electrical',this)"><span class="trade-icon">⚡</span>Electrical</button>
+                <button class="trade-btn" onclick="selectTrade('hvac',this)"><span class="trade-icon">❄️</span>HVAC</button>
+                <button class="trade-btn" onclick="selectTrade('roofing',this)" style="grid-column:1/-1"><span class="trade-icon">🏠</span>Roofing</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="builder-panel" style="flex:1">
+            <div class="builder-panel-head">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span class="builder-panel-title">Templates</span>
+            </div>
+            <div class="builder-panel-body">
+              <div class="template-list" id="templateList"></div>
+            </div>
+          </div>
+
+          <div class="builder-panel">
+            <div class="builder-panel-head">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span class="builder-panel-title">AI Quick Draft</span>
+            </div>
+            <div class="builder-panel-body">
+              <div class="ai-draft-area">
+                <div class="ai-draft-label">Describe the task</div>
+                <textarea class="ai-draft-input" id="aiDraftInput" placeholder="e.g. Repair a leaking shut-off valve under a kitchen sink in a residential property…" rows="3"></textarea>
+              </div>
+              <button class="builder-btn builder-btn-ai" id="aiDraftBtn" onclick="runAiDraft()" style="width:100%">
+                ✦ Generate with AI
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: builder form -->
+        <div class="builder-panel" style="display:flex;flex-direction:column;min-height:0">
+          <div class="builder-steps" id="builderSteps">
+            <div class="builder-step active" data-step="1" onclick="goToStep(1)"><div class="builder-step-num">1</div>Details</div>
+            <div class="builder-step" data-step="2" onclick="goToStep(2)"><div class="builder-step-num">2</div>Safety &amp; PPE</div>
+            <div class="builder-step" data-step="3" onclick="goToStep(3)"><div class="builder-step-num">3</div>Procedure</div>
+            <div class="builder-step" data-step="4" onclick="goToStep(4)"><div class="builder-step-num">4</div>Warnings</div>
+            <div class="builder-step" data-step="5" onclick="goToStep(5)"><div class="builder-step-num">5</div>Preview &amp; Export</div>
+          </div>
+
+          <div class="builder-content" id="builderContent">
+            <!-- Step content rendered by JS -->
+          </div>
+
+          <div class="builder-actions" id="builderActions"></div>
+        </div>
+      </div>
+    </div>
+
 
     <!-- TEAM PAGE -->
     <div class="page" id="page-team">
@@ -476,6 +623,7 @@ function showPage(name, el) {
   if (name === 'sops')      loadSops();
   if (name === 'team')      loadTeam();
   if (name === 'dashboard') loadDashboard();
+  if (name === 'builder')   initBuilder();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
@@ -884,6 +1032,449 @@ function showToast(msg) {
   setTimeout(function(){t.classList.remove('show');}, 3000);
 }
 
+
+
+// ── SOP BUILDER ──────────────────────────────────────────────────────────────
+
+var TRADE_TEMPLATES = {
+  masonry: [
+    {id:'crack-repair',    name:'Crack Repair — Concrete/Cement Surface'},
+    {id:'expansion-joint', name:'Expansion Joint Replacement'},
+    {id:'resurfacing',     name:'Concrete Surface Resurfacing'},
+    {id:'waterproofing',   name:'Below-Grade Waterproofing Application'},
+    {id:'anchor-install',  name:'Anchor Bolt Installation in Concrete'},
+  ],
+  plumbing: [
+    {id:'wax-ring',        name:'Wax Ring Replacement — Toilet'},
+    {id:'faucet-replace',  name:'Faucet Replacement — Kitchen or Bath'},
+    {id:'ptrap',           name:'P-Trap Replacement & Drain Repair'},
+    {id:'shutoff-valve',   name:'Shut-Off Valve Replacement'},
+    {id:'water-heater',    name:'Water Heater Replacement — Tank Style'},
+    {id:'shower-valve',    name:'Shower Valve Replacement'},
+  ],
+  electrical: [
+    {id:'outlet-replace',  name:'Outlet (Receptacle) Replacement'},
+    {id:'gfci-install',    name:'GFCI Outlet Installation'},
+    {id:'switch-replace',  name:'Light Switch Replacement'},
+    {id:'fixture-replace', name:'Light Fixture Replacement'},
+    {id:'breaker-replace', name:'Circuit Breaker Replacement'},
+    {id:'smoke-detector',  name:'Smoke & CO Detector Replacement'},
+  ],
+  hvac: [
+    {id:'filter-replace',  name:'Air Filter Replacement'},
+    {id:'thermostat',      name:'Thermostat Replacement'},
+    {id:'condenser-clean', name:'Condenser Coil Cleaning'},
+    {id:'belt-replace',    name:'Blower Belt Replacement'},
+    {id:'drain-pan',       name:'Condensate Drain Pan & Line Cleaning'},
+    {id:'refrigerant-chk', name:'Refrigerant Level Check & Top-Off'},
+  ],
+  roofing: [
+    {id:'shingle-replace', name:'Shingle Replacement — Asphalt'},
+    {id:'flashing-repair', name:'Flashing Repair Around Chimney/Vent'},
+    {id:'gutter-clean',    name:'Gutter Cleaning & Downspout Flush'},
+    {id:'ridge-cap',       name:'Ridge Cap Installation'},
+    {id:'roof-inspect',    name:'Annual Roof Inspection & Documentation'},
+    {id:'flat-patch',      name:'Flat Roof Membrane Patch'},
+  ],
+};
+
+var TRADE_PPE = {
+  masonry:   ['Safety glasses','N95 respirator','Chemical-resistant gloves','Knee pads','Slip-resistant footwear','High-vis vest'],
+  plumbing:  ['Safety glasses','Work gloves','Knee pads','Slip-resistant footwear','N95 respirator','Work light'],
+  electrical:['Safety glasses','Insulated gloves (1000V)','Rubber-soled footwear','Work light','Hard hat','High-vis vest'],
+  hvac:      ['Safety glasses','Work gloves','N95 respirator','Knee pads','Slip-resistant footwear','High-vis vest'],
+  roofing:   ['Hard hat','Safety glasses','Fall arrest harness','Slip-resistant footwear','Work gloves','High-vis vest'],
+};
+
+var builderDoc = {
+  trade: 'masonry', template: '', currentStep: 1,
+  title: '', sopId: '', version: '1.0', effectiveDate: '',
+  preparedBy: '', scope: '', purpose: '',
+  ppe: [],
+  envConditions: '',
+  steps: [{title:'', detail:'', warning:''}],
+  warnings: [],
+  notes: '',
+};
+
+function selectTrade(trade, btn) {
+  builderDoc.trade = trade;
+  builderDoc.ppe = [];
+  builderDoc.template = '';
+  document.querySelectorAll('.trade-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderTemplates(trade);
+  renderStep(builderDoc.currentStep);
+}
+
+function renderTemplates(trade) {
+  var list = document.getElementById('templateList');
+  var templates = TRADE_TEMPLATES[trade] || [];
+  list.innerHTML = '';
+  templates.forEach(function(t) {
+    var btn = document.createElement('button');
+    btn.className = 'template-item';
+    btn.textContent = t.name;
+    btn.onclick = function() {
+      document.querySelectorAll('.template-item').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      applyTemplate(trade, t);
+    };
+    list.appendChild(btn);
+  });
+}
+
+function applyTemplate(trade, t) {
+  builderDoc.template = t.id;
+  builderDoc.title    = t.name;
+  builderDoc.sopId    = 'SOP-' + trade.substring(0,4).toUpperCase() + '-' + String(Math.floor(Math.random()*900)+100);
+  builderDoc.version  = '1.0';
+  builderDoc.effectiveDate = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  builderDoc.preparedBy    = session ? (session.full_name || '') : '';
+  builderDoc.purpose  = 'This SOP establishes safe and effective steps for ' + t.name.toLowerCase() + '. Following this procedure ensures quality workmanship and prevents injury or property damage.';
+  builderDoc.scope    = 'Applies to maintenance technicians and field workers performing ' + t.name.toLowerCase() + ' in residential and commercial settings.';
+  builderDoc.ppe      = TRADE_PPE[trade] ? TRADE_PPE[trade].slice(0,4) : [];
+  builderDoc.envConditions = 'Verify adequate lighting before beginning. Keep bystanders clear of the work area. Ensure all required tools and materials are on site before starting.';
+  builderDoc.steps    = [
+    {title:'Assess and Document', detail:'Inspect the area thoroughly before beginning work. Photograph existing conditions. Note any hazards or conditions that may affect the repair approach.', warning:''},
+    {title:'Prepare Work Area', detail:'Clear the area of obstructions. Lay down drop cloths or protective covering as needed. Ensure all required tools and materials are within reach.', warning:''},
+    {title:'Perform ' + t.name, detail:'Follow manufacturer instructions for all materials. Work methodically from start to finish without skipping steps.', warning:''},
+    {title:'Inspect and Clean Up', detail:'Inspect completed work against acceptance criteria. Clean the area and dispose of waste materials properly.', warning:''},
+  ];
+  builderDoc.warnings = [
+    {type:'WARNING', text:'Always wear required PPE for the full duration of the task.'},
+    {type:'NOTE',    text:'Read all product labels before use. Follow manufacturer cure times and application instructions.'},
+  ];
+  builderDoc.notes = 'If any condition is encountered that is outside the scope of this procedure, stop work and consult a supervisor before proceeding.';
+  renderStep(builderDoc.currentStep);
+  showToast('Template loaded — customize each section below');
+}
+
+function goToStep(n) {
+  builderDoc.currentStep = n;
+  document.querySelectorAll('.builder-step').forEach(function(s){
+    var sn = parseInt(s.getAttribute('data-step'));
+    s.classList.remove('active','done');
+    if (sn === n) s.classList.add('active');
+    else if (sn < n) s.classList.add('done');
+  });
+  renderStep(n);
+}
+
+function renderStep(n) {
+  var el = document.getElementById('builderContent');
+  var actions = document.getElementById('builderActions');
+  var prevBtn = n > 1 ? '<button class="builder-btn builder-btn-secondary" onclick="goToStep('+(n-1)+')">← Back</button>' : '';
+  var nextBtn = n < 5 ? '<button class="builder-btn builder-btn-primary" onclick="goToStep('+(n+1)+')">Next →</button>' : '';
+
+  if (n === 1) {
+    el.innerHTML =
+      '<div class="builder-section"><div class="builder-section-title">Document Identity</div>' +
+      '<div class="builder-row">' +
+        '<div class="builder-field"><label class="builder-label">SOP Title</label><input class="builder-input" id="bf-title" placeholder="e.g. Wax Ring Replacement — Toilet" value="'+esc(builderDoc.title)+'" oninput="builderDoc.title=this.value"></div>' +
+        '<div class="builder-field"><label class="builder-label">Document ID</label><input class="builder-input" id="bf-sopId" placeholder="SOP-PLMB-001" value="'+esc(builderDoc.sopId)+'" oninput="builderDoc.sopId=this.value"></div>' +
+      '</div>' +
+      '<div class="builder-row">' +
+        '<div class="builder-field"><label class="builder-label">Version</label><input class="builder-input" id="bf-version" value="'+esc(builderDoc.version)+'" oninput="builderDoc.version=this.value"></div>' +
+        '<div class="builder-field"><label class="builder-label">Effective Date</label><input class="builder-input" id="bf-date" value="'+esc(builderDoc.effectiveDate)+'" oninput="builderDoc.effectiveDate=this.value"></div>' +
+      '</div>' +
+      '<div class="builder-row">' +
+        '<div class="builder-field full"><label class="builder-label">Prepared By</label><input class="builder-input" value="'+esc(builderDoc.preparedBy)+'" oninput="builderDoc.preparedBy=this.value"></div>' +
+      '</div>' +
+      '</div>' +
+      '<div class="builder-section"><div class="builder-section-title">Purpose &amp; Scope</div>' +
+      '<div class="builder-field full" style="margin-bottom:12px"><label class="builder-label">Purpose</label><textarea class="builder-textarea" rows="3" oninput="builderDoc.purpose=this.value">'+esc(builderDoc.purpose)+'</textarea></div>' +
+      '<div class="builder-field full"><label class="builder-label">Scope</label><textarea class="builder-textarea" rows="2" oninput="builderDoc.scope=this.value">'+esc(builderDoc.scope)+'</textarea></div>' +
+      '</div>';
+    actions.innerHTML = nextBtn;
+  }
+
+  else if (n === 2) {
+    var allPpe = ['Safety glasses','N95 respirator','Chemical-resistant gloves','Insulated gloves (1000V)','Knee pads','Slip-resistant footwear','Hard hat','Fall arrest harness','High-vis vest','Work gloves','Work light','Rubber-soled footwear'];
+    var ppeHtml = allPpe.map(function(p) {
+      var checked = builderDoc.ppe.indexOf(p) > -1;
+      return '<label class="ppe-check '+(checked?'checked':'')+'" onclick="togglePpe(''+p+'',this)">' +
+        '<input type="checkbox" '+(checked?'checked':'')+'>'+p+'</label>';
+    }).join('');
+    el.innerHTML =
+      '<div class="builder-section"><div class="builder-section-title">Required PPE</div>' +
+      '<div class="ppe-grid" id="ppeGrid">'+ppeHtml+'</div></div>' +
+      '<div class="builder-section"><div class="builder-section-title">Environmental Conditions</div>' +
+      '<div class="builder-field full"><label class="builder-label">Conditions to verify before starting</label>' +
+      '<textarea class="builder-textarea" rows="4" oninput="builderDoc.envConditions=this.value">'+esc(builderDoc.envConditions)+'</textarea></div></div>';
+    actions.innerHTML = prevBtn + nextBtn;
+  }
+
+  else if (n === 3) {
+    var stepsHtml = builderDoc.steps.map(function(s,i) {
+      return '<div class="step-row" id="step-row-'+i+'">' +
+        '<div class="step-num">'+(i+1)+'</div>' +
+        '<div class="step-inputs">' +
+          '<input class="builder-input" placeholder="Step title (e.g. Shut Off Water Supply)" value="'+esc(s.title)+'" oninput="builderDoc.steps['+i+'].title=this.value">' +
+          '<textarea class="builder-textarea" placeholder="Detailed instructions for this step…" rows="3" oninput="builderDoc.steps['+i+'].detail=this.value">'+esc(s.detail)+'</textarea>' +
+          '<input class="builder-input" placeholder="Optional: inline warning for this step" value="'+esc(s.warning)+'" oninput="builderDoc.steps['+i+'].warning=this.value" style="border-color:rgba(200,124,80,.3);font-size:11px">' +
+        '</div>' +
+        '<button class="step-del" onclick="deleteStep('+i+')" title="Remove step"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
+        '</div>';
+    }).join('');
+    el.innerHTML =
+      '<div class="builder-section"><div class="builder-section-title">Step-by-Step Procedure</div>' +
+      '<div class="steps-list" id="stepsList">'+stepsHtml+'</div>' +
+      '<button class="add-step-btn" onclick="addStep()" style="margin-top:10px">' +
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+        'Add Step</button></div>';
+    actions.innerHTML = prevBtn + nextBtn;
+  }
+
+  else if (n === 4) {
+    var warnHtml = builderDoc.warnings.map(function(w,i) {
+      return '<div class="warning-row">' +
+        '<span class="warning-type">'+esc(w.type)+'</span>' +
+        '<input class="builder-input" value="'+esc(w.text)+'" oninput="builderDoc.warnings['+i+'].text=this.value">' +
+        '<button class="step-del" onclick="deleteWarning('+i+')"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
+        '</div>';
+    }).join('');
+    el.innerHTML =
+      '<div class="builder-section"><div class="builder-section-title">Warnings &amp; Notes</div>' +
+      '<div class="warning-list" id="warningList">'+warnHtml+'</div>' +
+      '<div style="display:flex;gap:8px;margin-top:10px">' +
+        '<button class="add-step-btn" onclick="addWarning('WARNING')" style="flex:1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Warning</button>' +
+        '<button class="add-step-btn" onclick="addWarning('NOTE')" style="flex:1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Note</button>' +
+        '<button class="add-step-btn" onclick="addWarning('CAUTION')" style="flex:1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Caution</button>' +
+      '</div></div>' +
+      '<div class="builder-section"><div class="builder-section-title">Additional Notes &amp; Escalation</div>' +
+      '<div class="builder-field full"><textarea class="builder-textarea" rows="4" placeholder="Escalation criteria, special conditions, references…" oninput="builderDoc.notes=this.value">'+esc(builderDoc.notes)+'</textarea></div></div>';
+    actions.innerHTML = prevBtn + nextBtn;
+  }
+
+  else if (n === 5) {
+    el.innerHTML =
+      '<div class="builder-section"><div class="builder-section-title">Preview</div>' +
+      '<div class="preview-box" id="sopPreview">'+buildPreviewHTML()+'</div></div>';
+    actions.innerHTML =
+      prevBtn +
+      '<button class="builder-btn builder-btn-secondary" onclick="saveToLibrary()" style="display:flex;align-items:center;gap:6px">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>' +
+        'Save to Library</button>' +
+      '<button class="builder-btn builder-btn-primary" onclick="downloadDocx()" style="display:flex;align-items:center;gap:6px">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+        'Download DOCX</button>';
+  }
+}
+
+function buildPreviewHTML() {
+  var d = builderDoc;
+  var ppeList = d.ppe.length ? d.ppe.map(function(p){return '  • '+p;}).join('\n') : '  None specified';
+  var stepsText = d.steps.map(function(s,i){
+    var t = 'Step '+(i+1)+': '+s.title+'\n'+s.detail;
+    if (s.warning) t += '\n⚠ '+s.warning;
+    return t;
+  }).join('\n\n');
+  var warnText = d.warnings.map(function(w){ return '['+w.type+'] '+w.text; }).join('\n');
+  return '<h2>'+(d.title||'Untitled SOP')+'</h2>' +
+    '<div style="font-size:10px;color:var(--muted);margin-bottom:14px">' +
+    (d.sopId||'')+(d.version?' | Rev '+d.version:'')+(d.effectiveDate?' | '+d.effectiveDate:'') +
+    (d.preparedBy?' | Prepared by '+d.preparedBy:'') + '</div>' +
+    '<h3>1. Purpose</h3><p>'+(d.purpose||'—')+'</p>' +
+    '<h3>2. Scope</h3><p>'+(d.scope||'—')+'</p>' +
+    '<h3>3. Required PPE</h3><pre style="font-size:11px;font-family:inherit">'+ppeList+'</pre>' +
+    '<h3>4. Environmental Conditions</h3><p>'+(d.envConditions||'—')+'</p>' +
+    (warnText ? '<h3>Warnings &amp; Notes</h3>' + d.warnings.map(function(w){
+      return '<div class="warning-block"><strong>'+w.type+':</strong> '+w.text+'</div>';
+    }).join('') : '') +
+    '<h3>5. Procedure</h3><pre style="font-size:11px;font-family:inherit;white-space:pre-wrap">'+stepsText+'</pre>' +
+    (d.notes ? '<h3>Additional Notes</h3><p>'+d.notes+'</p>' : '');
+}
+
+function buildPlainText() {
+  var d = builderDoc;
+  var lines = [];
+  lines.push('STANDARD OPERATING PROCEDURE');
+  lines.push(d.title || 'Untitled SOP');
+  lines.push('');
+  lines.push('Document ID: '+(d.sopId||'') + '  |  Version: '+(d.version||'') + '  |  Effective: '+(d.effectiveDate||''));
+  lines.push('Prepared By: '+(d.preparedBy||''));
+  lines.push('');
+  lines.push('1. PURPOSE');
+  lines.push(d.purpose || '');
+  lines.push('');
+  lines.push('2. SCOPE');
+  lines.push(d.scope || '');
+  lines.push('');
+  lines.push('3. REQUIRED PPE');
+  d.ppe.forEach(function(p){ lines.push('  • '+p); });
+  lines.push('');
+  lines.push('4. ENVIRONMENTAL CONDITIONS');
+  lines.push(d.envConditions || '');
+  lines.push('');
+  if (d.warnings.length) {
+    lines.push('WARNINGS & NOTES');
+    d.warnings.forEach(function(w){ lines.push('['+w.type+'] '+w.text); });
+    lines.push('');
+  }
+  lines.push('5. PROCEDURE');
+  d.steps.forEach(function(s,i){
+    lines.push('Step '+(i+1)+': '+s.title);
+    lines.push(s.detail);
+    if (s.warning) lines.push('⚠ WARNING: '+s.warning);
+    lines.push('');
+  });
+  if (d.notes) { lines.push('ADDITIONAL NOTES'); lines.push(d.notes); }
+  return lines.join('\n');
+}
+
+function togglePpe(item, el) {
+  var idx = builderDoc.ppe.indexOf(item);
+  if (idx > -1) { builderDoc.ppe.splice(idx,1); el.classList.remove('checked'); }
+  else { builderDoc.ppe.push(item); el.classList.add('checked'); }
+}
+
+function addStep() {
+  builderDoc.steps.push({title:'',detail:'',warning:''});
+  renderStep(3);
+}
+function deleteStep(i) {
+  if (builderDoc.steps.length <= 1) { showToast('At least one step required'); return; }
+  builderDoc.steps.splice(i,1);
+  renderStep(3);
+}
+function addWarning(type) {
+  builderDoc.warnings.push({type:type, text:''});
+  renderStep(4);
+}
+function deleteWarning(i) {
+  builderDoc.warnings.splice(i,1);
+  renderStep(4);
+}
+
+function saveToLibrary() {
+  if (!builderDoc.title) { showToast('Add a title before saving'); return; }
+  var content = buildPlainText();
+  fetch('/api/sops/add', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
+    body: JSON.stringify({
+      name:     builderDoc.title,
+      sop_id:   builderDoc.sopId,
+      category: builderDoc.trade === 'masonry' ? 'maint' : builderDoc.trade === 'electrical' ? 'safety' : 'maint',
+      content:  content,
+      source:   'SOP Builder',
+      version:  builderDoc.version,
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if (data.error) { showToast('Error saving: '+JSON.stringify(data.error)); return; }
+    showToast('✓ Saved to SOP Library — ready for field AI matching');
+  })
+  .catch(function(){ showToast('Error saving to library'); });
+}
+
+function downloadDocx() {
+  if (!builderDoc.title) { showToast('Add a title before downloading'); return; }
+  // Build a rich HTML document and download as .html that Word can open
+  var d = builderDoc;
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+    '<style>body{font-family:Georgia,serif;max-width:750px;margin:40px auto;color:#1a1410;line-height:1.6}' +
+    'h1{font-size:22px;border-bottom:2px solid #C2A072;padding-bottom:8px;color:#05172f}' +
+    'h2{font-size:14px;text-transform:uppercase;letter-spacing:.12em;color:#8B6834;margin-top:24px}' +
+    '.meta{font-size:11px;color:#7a6e62;margin-bottom:20px}' +
+    '.ppe-item{display:inline-block;margin:3px 6px 3px 0;padding:3px 10px;background:#f0ece3;border-radius:4px;font-size:12px}' +
+    '.step{margin-bottom:16px;padding:12px 16px;border-left:3px solid #C2A072;background:#f7f4ef}' +
+    '.step-num{font-weight:700;color:#8B6834}' +
+    '.warning-block{background:#fef3ee;border-left:3px solid #c0552a;padding:8px 12px;margin:8px 0;font-size:12px}' +
+    '.note-block{background:#f0ece3;border-left:3px solid #C2A072;padding:8px 12px;margin:8px 0;font-size:12px}' +
+    'footer{margin-top:40px;font-size:10px;color:#9a8a78;border-top:1px solid #e0d8c8;padding-top:12px}' +
+    '</style></head><body>' +
+    '<h1>'+esc(d.title)+'</h1>' +
+    '<div class="meta">Document ID: '+(d.sopId||'—')+'&nbsp;&nbsp;|&nbsp;&nbsp;Rev: '+(d.version||'1.0')+
+    '&nbsp;&nbsp;|&nbsp;&nbsp;Effective: '+(d.effectiveDate||'—')+
+    '&nbsp;&nbsp;|&nbsp;&nbsp;Prepared by: '+(d.preparedBy||'—')+'</div>' +
+    '<h2>1. Purpose</h2><p>'+esc(d.purpose)+'</p>' +
+    '<h2>2. Scope</h2><p>'+esc(d.scope)+'</p>' +
+    '<h2>3. Required PPE</h2>' +
+    d.ppe.map(function(p){return '<span class="ppe-item">● '+esc(p)+'</span>';}).join('') +
+    '<h2>4. Environmental Conditions</h2><p>'+esc(d.envConditions)+'</p>';
+  if (d.warnings.length) {
+    html += '<h2>Warnings &amp; Notes</h2>';
+    d.warnings.forEach(function(w){
+      html += '<div class="'+(w.type==='NOTE'?'note-block':'warning-block')+'"><strong>'+w.type+':</strong> '+esc(w.text)+'</div>';
+    });
+  }
+  html += '<h2>5. Procedure</h2>';
+  d.steps.forEach(function(s,i){
+    html += '<div class="step"><div class="step-num">Step '+(i+1)+': '+esc(s.title)+'</div>' +
+      '<p style="margin-top:6px;font-size:13px">'+esc(s.detail)+'</p>' +
+      (s.warning?'<div class="warning-block" style="margin-top:8px"><strong>⚠ WARNING:</strong> '+esc(s.warning)+'</div>':'') +
+      '</div>';
+  });
+  if (d.notes) html += '<h2>Additional Notes &amp; Escalation</h2><p>'+esc(d.notes)+'</p>';
+  html += '<footer>'+esc(d.sopId)+' | Rev '+esc(d.version)+' | '+esc(d.effectiveDate)+'&nbsp;&nbsp;&nbsp;Meridian Field Intelligence &mdash; meridianfi.app</footer>';
+  html += '</body></html>';
+  var blob = new Blob([html], {type:'application/msword'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href   = url;
+  a.download = (d.sopId||'SOP') + '_' + d.title.replace(/[^a-zA-Z0-9]/g,'_').substring(0,40) + '.doc';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('↓ Downloaded — open in Word to finalize formatting');
+}
+
+async function runAiDraft() {
+  var prompt = document.getElementById('aiDraftInput').value.trim();
+  if (!prompt) { showToast('Describe the task first'); return; }
+  var btn = document.getElementById('aiDraftBtn');
+  btn.textContent = '✦ Generating…';
+  btn.classList.add('loading');
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{role:'user', content:
+          'Generate a structured SOP in JSON for this task: "'+prompt+'". ' +
+          'Return ONLY valid JSON with these fields: title (string), sopId (string like SOP-XXXX-001), ' +
+          'purpose (string), scope (string), ppe (array of strings), envConditions (string), ' +
+          'steps (array of {title, detail, warning}), warnings (array of {type, text} where type is WARNING/NOTE/CAUTION), ' +
+          'notes (string). Make it professional, safety-focused, and appropriate for field maintenance staff.'
+        }]
+      })
+    });
+    var data = await response.json();
+    var text = data.content && data.content[0] ? data.content[0].text : '';
+    var clean = text.replace(/```json|```/g,'').trim();
+    var doc = JSON.parse(clean);
+    builderDoc.title        = doc.title        || builderDoc.title;
+    builderDoc.sopId        = doc.sopId        || builderDoc.sopId;
+    builderDoc.purpose      = doc.purpose      || builderDoc.purpose;
+    builderDoc.scope        = doc.scope        || builderDoc.scope;
+    builderDoc.ppe          = doc.ppe          || builderDoc.ppe;
+    builderDoc.envConditions= doc.envConditions|| builderDoc.envConditions;
+    builderDoc.steps        = doc.steps        || builderDoc.steps;
+    builderDoc.warnings     = doc.warnings     || builderDoc.warnings;
+    builderDoc.notes        = doc.notes        || builderDoc.notes;
+    builderDoc.effectiveDate= new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    builderDoc.preparedBy   = session ? (session.full_name||'') : '';
+    builderDoc.version      = '1.0';
+    renderStep(builderDoc.currentStep);
+    showToast('✓ AI draft complete — review each section');
+  } catch(err) {
+    showToast('AI error — check your connection and try again');
+    console.error(err);
+  } finally {
+    btn.textContent = '✦ Generate with AI';
+    btn.classList.remove('loading');
+  }
+}
+
+// Init builder on page load
+function initBuilder() {
+  renderTemplates('masonry');
+  renderStep(1);
+}
 
 // ── THEME ─────────────────────────────────────────────────────────────────────
 function toggleTheme() {
