@@ -182,7 +182,6 @@ def send_invite_email(to_email, to_name, company_name, manager_name,
         "html":    html,
     }).encode()
 
-    print(f"[email] Sending via Resend — to: {to_email} from: team@meridianfi.app key_prefix: {RESEND_KEY[:8] if RESEND_KEY else 'MISSING'}")
     req = urllib.request.Request(
         "https://api.resend.com/emails",
         data=payload,
@@ -202,7 +201,6 @@ def send_invite_email(to_email, to_name, company_name, manager_name,
         err_body = e.read().decode()
         print(f"[email] Resend error {e.code}: {err_body}")
         # Also log headers for debugging
-        print(f"[email] Resend response headers: {dict(e.headers)}")
         return False
     except Exception as ex:
         print(f"[email] Unexpected error: {ex}")
@@ -251,7 +249,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         }
         # Strip query string for routing
         path = self.path.split("?")[0]
-        print(f"[POST] {path}")
         h = routes.get(path)
         if h:
             try:
@@ -265,7 +262,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 except Exception:
                     pass
         else:
-            print(f"[404] No route for {path}")
             self.send_error(404)
 
     def read_body(self):
@@ -274,10 +270,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             if not length:
                 return {}
             raw = self.rfile.read(length)
-            print(f"[body] raw bytes: {raw[:200]}")
             return json.loads(raw)
-        except Exception as ex:
-            print(f"[body] parse error: {ex}")
+        except Exception:
             return {}
 
     def get_token(self):
@@ -480,15 +474,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def handle_invite(self):
         token = self.get_token()
         body  = self.read_body()
-        print(f"[invite] Request received — email: {body.get('email')} role: {body.get('role')}")
         if not token:
-            print("[invite] No token — rejecting")
             self.send_json(401, {"error": "Not authenticated"}); return
         auth_user, profile = get_user_from_token(token)
         if not profile or profile.get("role") not in ("manager","admin"):
-            print(f"[invite] Auth failed — profile: {profile}")
-            self.send_json(403, {"error": "Managers only"}); return
-        print(f"[invite] Auth OK — manager: {profile.get('full_name')} company: {profile.get('company_id')}")
+                self.send_json(403, {"error": "Managers only"}); return
         url = SUPABASE_URL.rstrip("/") + "/auth/v1/admin/users"
         headers = {
             "Content-Type":  "application/json",
@@ -505,7 +495,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         try:
             with urllib.request.urlopen(req, timeout=15) as r:
                 new_user = json.loads(r.read())
-            print(f"[invite] Supabase account created — id: {new_user.get('id')}")
         except urllib.error.HTTPError as e:
             err_body = e.read().decode()
             print(f"[invite] Supabase error {e.code}: {err_body}")
@@ -548,7 +537,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             app_url       = app_url,
         )
 
-        print(f"[invite] Complete — user_id: {new_user['id']} email_sent: {email_sent}")
         self.send_json(200, {"ok": True, "user_id": new_user["id"], "email_sent": email_sent})
 
     def handle_team_list(self):
@@ -664,7 +652,6 @@ if __name__ == "__main__":
 
     print("=" * 48)
     print("  Meridian  |  http://0.0.0.0:" + str(PORT))
-    print(f"  PORT env var = {os.environ.get('PORT', 'not set — using default')}")
     print("  Ctrl+C to stop")
     print("=" * 48)
 
