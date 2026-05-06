@@ -176,7 +176,7 @@ def send_invite_email(to_email, to_name, company_name, manager_name,
     )
 
     payload = json.dumps({
-        "from":    "Meridian <team@meridianfi.app>",
+        "from":    "Meridian <team@send.meridianfi.app>",
         "to":      [to_email],
         "subject": f"You have been invited to join Meridian \u2014 {company_name}",
         "html":    html,
