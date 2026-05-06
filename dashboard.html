@@ -1165,102 +1165,193 @@ function goToStep(n) {
 function renderStep(n) {
   var el = document.getElementById('builderContent');
   var actions = document.getElementById('builderActions');
-  var prevBtn = n > 1 ? '<button class="builder-btn builder-btn-secondary" onclick="goToStep('+(n-1)+')">← Back</button>' : '';
-  var nextBtn = n < 5 ? '<button class="builder-btn builder-btn-primary" onclick="goToStep('+(n+1)+')">Next →</button>' : '';
+  var prevBtn = n > 1 ? '<button class="builder-btn builder-btn-secondary" onclick="goToStep('+(n-1)+')">&#8592; Back</button>' : '';
+  var nextBtn = n < 5 ? '<button class="builder-btn builder-btn-primary" onclick="goToStep('+(n+1)+')">Next &#8594;</button>' : '';
 
   if (n === 1) {
-    el.innerHTML =
-      '<div class="builder-section"><div class="builder-section-title">Document Identity</div>' +
-      '<div class="builder-row">' +
-        '<div class="builder-field"><label class="builder-label">SOP Title</label><input class="builder-input" id="bf-title" placeholder="e.g. Wax Ring Replacement — Toilet" value="'+esc(builderDoc.title)+'" oninput="builderDoc.title=this.value"></div>' +
-        '<div class="builder-field"><label class="builder-label">Document ID</label><input class="builder-input" id="bf-sopId" placeholder="SOP-PLMB-001" value="'+esc(builderDoc.sopId)+'" oninput="builderDoc.sopId=this.value"></div>' +
-      '</div>' +
-      '<div class="builder-row">' +
-        '<div class="builder-field"><label class="builder-label">Version</label><input class="builder-input" id="bf-version" value="'+esc(builderDoc.version)+'" oninput="builderDoc.version=this.value"></div>' +
-        '<div class="builder-field"><label class="builder-label">Effective Date</label><input class="builder-input" id="bf-date" value="'+esc(builderDoc.effectiveDate)+'" oninput="builderDoc.effectiveDate=this.value"></div>' +
-      '</div>' +
-      '<div class="builder-row">' +
-        '<div class="builder-field full"><label class="builder-label">Prepared By</label><input class="builder-input" value="'+esc(builderDoc.preparedBy)+'" oninput="builderDoc.preparedBy=this.value"></div>' +
-      '</div>' +
-      '</div>' +
-      '<div class="builder-section"><div class="builder-section-title">Purpose &amp; Scope</div>' +
-      '<div class="builder-field full" style="margin-bottom:12px"><label class="builder-label">Purpose</label><textarea class="builder-textarea" rows="3" oninput="builderDoc.purpose=this.value">'+esc(builderDoc.purpose)+'</textarea></div>' +
-      '<div class="builder-field full"><label class="builder-label">Scope</label><textarea class="builder-textarea" rows="2" oninput="builderDoc.scope=this.value">'+esc(builderDoc.scope)+'</textarea></div>' +
-      '</div>';
+    el.innerHTML = [
+      '<div class="builder-section"><div class="builder-section-title">Document Identity</div>',
+      '<div class="builder-row">',
+        '<div class="builder-field"><label class="builder-label">SOP Title</label>',
+        '<input class="builder-input" id="bf-title" placeholder="e.g. Wax Ring Replacement"></div>',
+        '<div class="builder-field"><label class="builder-label">Document ID</label>',
+        '<input class="builder-input" id="bf-sopId" placeholder="SOP-PLMB-001"></div>',
+      '</div>',
+      '<div class="builder-row">',
+        '<div class="builder-field"><label class="builder-label">Version</label>',
+        '<input class="builder-input" id="bf-version"></div>',
+        '<div class="builder-field"><label class="builder-label">Effective Date</label>',
+        '<input class="builder-input" id="bf-date"></div>',
+      '</div>',
+      '<div class="builder-row">',
+        '<div class="builder-field full"><label class="builder-label">Prepared By</label>',
+        '<input class="builder-input" id="bf-preparedBy"></div>',
+      '</div></div>',
+      '<div class="builder-section"><div class="builder-section-title">Purpose &amp; Scope</div>',
+        '<div class="builder-field full" style="margin-bottom:12px"><label class="builder-label">Purpose</label>',
+        '<textarea class="builder-textarea" id="bf-purpose" rows="3"></textarea></div>',
+        '<div class="builder-field full"><label class="builder-label">Scope</label>',
+        '<textarea class="builder-textarea" id="bf-scope" rows="2"></textarea></div>',
+      '</div>'
+    ].join('');
+    // Set values and bind events after DOM insertion
+    setVal('bf-title',      builderDoc.title);
+    setVal('bf-sopId',      builderDoc.sopId);
+    setVal('bf-version',    builderDoc.version);
+    setVal('bf-date',       builderDoc.effectiveDate);
+    setVal('bf-preparedBy', builderDoc.preparedBy);
+    setVal('bf-purpose',    builderDoc.purpose);
+    setVal('bf-scope',      builderDoc.scope);
+    bindInput('bf-title',      function(v){ builderDoc.title = v; });
+    bindInput('bf-sopId',      function(v){ builderDoc.sopId = v; });
+    bindInput('bf-version',    function(v){ builderDoc.version = v; });
+    bindInput('bf-date',       function(v){ builderDoc.effectiveDate = v; });
+    bindInput('bf-preparedBy', function(v){ builderDoc.preparedBy = v; });
+    bindInput('bf-purpose',    function(v){ builderDoc.purpose = v; });
+    bindInput('bf-scope',      function(v){ builderDoc.scope = v; });
     actions.innerHTML = nextBtn;
   }
 
   else if (n === 2) {
-    var allPpe = ['Safety glasses','N95 respirator','Chemical-resistant gloves','Insulated gloves (1000V)','Knee pads','Slip-resistant footwear','Hard hat','Fall arrest harness','High-vis vest','Work gloves','Work light','Rubber-soled footwear'];
+    var allPpe = ['Safety glasses','N95 respirator','Chemical-resistant gloves','Insulated gloves (1000V)',
+      'Knee pads','Slip-resistant footwear','Hard hat','Fall arrest harness',
+      'High-vis vest','Work gloves','Work light','Rubber-soled footwear'];
     var ppeHtml = allPpe.map(function(p) {
       var checked = builderDoc.ppe.indexOf(p) > -1;
-      return '<label class="ppe-check '+(checked?'checked':'')+'" onclick="togglePpe(''+p+'',this)">' +
-        '<input type="checkbox" '+(checked?'checked':'')+'>'+p+'</label>';
+      return '<label class="ppe-check ' + (checked ? 'checked' : '') + '" data-ppe="' + p + '">' + p + '</label>';
     }).join('');
-    el.innerHTML =
-      '<div class="builder-section"><div class="builder-section-title">Required PPE</div>' +
-      '<div class="ppe-grid" id="ppeGrid">'+ppeHtml+'</div></div>' +
-      '<div class="builder-section"><div class="builder-section-title">Environmental Conditions</div>' +
-      '<div class="builder-field full"><label class="builder-label">Conditions to verify before starting</label>' +
-      '<textarea class="builder-textarea" rows="4" oninput="builderDoc.envConditions=this.value">'+esc(builderDoc.envConditions)+'</textarea></div></div>';
+    el.innerHTML = [
+      '<div class="builder-section"><div class="builder-section-title">Required PPE</div>',
+      '<div class="ppe-grid" id="ppeGrid">' + ppeHtml + '</div></div>',
+      '<div class="builder-section"><div class="builder-section-title">Environmental Conditions</div>',
+      '<div class="builder-field full"><label class="builder-label">Conditions to verify before starting</label>',
+      '<textarea class="builder-textarea" id="bf-envCond" rows="4"></textarea></div></div>'
+    ].join('');
+    setVal('bf-envCond', builderDoc.envConditions);
+    bindInput('bf-envCond', function(v){ builderDoc.envConditions = v; });
+    document.querySelectorAll('.ppe-check').forEach(function(label) {
+      label.onclick = function() { togglePpe(this.getAttribute('data-ppe'), this); };
+    });
     actions.innerHTML = prevBtn + nextBtn;
   }
 
   else if (n === 3) {
-    var stepsHtml = builderDoc.steps.map(function(s,i) {
-      return '<div class="step-row" id="step-row-'+i+'">' +
-        '<div class="step-num">'+(i+1)+'</div>' +
-        '<div class="step-inputs">' +
-          '<input class="builder-input" placeholder="Step title (e.g. Shut Off Water Supply)" value="'+esc(s.title)+'" oninput="builderDoc.steps['+i+'].title=this.value">' +
-          '<textarea class="builder-textarea" placeholder="Detailed instructions for this step…" rows="3" oninput="builderDoc.steps['+i+'].detail=this.value">'+esc(s.detail)+'</textarea>' +
-          '<input class="builder-input" placeholder="Optional: inline warning for this step" value="'+esc(s.warning)+'" oninput="builderDoc.steps['+i+'].warning=this.value" style="border-color:rgba(200,124,80,.3);font-size:11px">' +
-        '</div>' +
-        '<button class="step-del" onclick="deleteStep('+i+')" title="Remove step"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
-        '</div>';
+    var stepsHtml = builderDoc.steps.map(function(s, i) {
+      return [
+        '<div class="step-row" id="step-row-' + i + '">',
+          '<div class="step-num">' + (i + 1) + '</div>',
+          '<div class="step-inputs">',
+            '<input class="builder-input" id="st-title-' + i + '" placeholder="Step title">',
+            '<textarea class="builder-textarea" id="st-detail-' + i + '" placeholder="Detailed instructions…" rows="3"></textarea>',
+            '<input class="builder-input" id="st-warn-' + i + '" placeholder="Optional inline warning" style="border-color:rgba(200,124,80,.3);font-size:11px">',
+          '</div>',
+          '<button class="step-del" data-step="' + i + '" title="Remove step">',
+            '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">',
+            '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>',
+        '</div>'
+      ].join('');
     }).join('');
-    el.innerHTML =
-      '<div class="builder-section"><div class="builder-section-title">Step-by-Step Procedure</div>' +
-      '<div class="steps-list" id="stepsList">'+stepsHtml+'</div>' +
-      '<button class="add-step-btn" onclick="addStep()" style="margin-top:10px">' +
-        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-        'Add Step</button></div>';
+    el.innerHTML = [
+      '<div class="builder-section"><div class="builder-section-title">Step-by-Step Procedure</div>',
+      '<div class="steps-list" id="stepsList">' + stepsHtml + '</div>',
+      '<button class="add-step-btn" id="addStepBtn" style="margin-top:10px">',
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">',
+        '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+        'Add Step</button></div>'
+    ].join('');
+    // Set values and bind
+    builderDoc.steps.forEach(function(s, i) {
+      setVal('st-title-'  + i, s.title);
+      setVal('st-detail-' + i, s.detail);
+      setVal('st-warn-'   + i, s.warning);
+      (function(idx) {
+        bindInput('st-title-'  + idx, function(v){ builderDoc.steps[idx].title   = v; });
+        bindInput('st-detail-' + idx, function(v){ builderDoc.steps[idx].detail  = v; });
+        bindInput('st-warn-'   + idx, function(v){ builderDoc.steps[idx].warning = v; });
+      })(i);
+    });
+    document.querySelectorAll('.step-del').forEach(function(btn) {
+      btn.onclick = function() { deleteStep(parseInt(this.getAttribute('data-step'))); };
+    });
+    var addBtn = document.getElementById('addStepBtn');
+    if (addBtn) addBtn.onclick = addStep;
     actions.innerHTML = prevBtn + nextBtn;
   }
 
   else if (n === 4) {
-    var warnHtml = builderDoc.warnings.map(function(w,i) {
-      return '<div class="warning-row">' +
-        '<span class="warning-type">'+esc(w.type)+'</span>' +
-        '<input class="builder-input" value="'+esc(w.text)+'" oninput="builderDoc.warnings['+i+'].text=this.value">' +
-        '<button class="step-del" onclick="deleteWarning('+i+')"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
-        '</div>';
+    var warnHtml = builderDoc.warnings.map(function(w, i) {
+      return [
+        '<div class="warning-row">',
+          '<span class="warning-type">' + w.type + '</span>',
+          '<input class="builder-input" id="wn-' + i + '" value="">',
+          '<button class="step-del" data-warn="' + i + '">',
+            '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">',
+            '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>',
+        '</div>'
+      ].join('');
     }).join('');
-    el.innerHTML =
-      '<div class="builder-section"><div class="builder-section-title">Warnings &amp; Notes</div>' +
-      '<div class="warning-list" id="warningList">'+warnHtml+'</div>' +
-      '<div style="display:flex;gap:8px;margin-top:10px">' +
-        '<button class="add-step-btn" onclick="addWarning('WARNING')" style="flex:1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Warning</button>' +
-        '<button class="add-step-btn" onclick="addWarning('NOTE')" style="flex:1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Note</button>' +
-        '<button class="add-step-btn" onclick="addWarning('CAUTION')" style="flex:1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Caution</button>' +
-      '</div></div>' +
-      '<div class="builder-section"><div class="builder-section-title">Additional Notes &amp; Escalation</div>' +
-      '<div class="builder-field full"><textarea class="builder-textarea" rows="4" placeholder="Escalation criteria, special conditions, references…" oninput="builderDoc.notes=this.value">'+esc(builderDoc.notes)+'</textarea></div></div>';
+    el.innerHTML = [
+      '<div class="builder-section"><div class="builder-section-title">Warnings &amp; Notes</div>',
+      '<div class="warning-list" id="warningList">' + warnHtml + '</div>',
+      '<div style="display:flex;gap:8px;margin-top:10px">',
+        '<button class="add-step-btn" data-wtype="WARNING" style="flex:1">+ Warning</button>',
+        '<button class="add-step-btn" data-wtype="NOTE" style="flex:1">+ Note</button>',
+        '<button class="add-step-btn" data-wtype="CAUTION" style="flex:1">+ Caution</button>',
+      '</div></div>',
+      '<div class="builder-section"><div class="builder-section-title">Additional Notes &amp; Escalation</div>',
+        '<div class="builder-field full">',
+        '<textarea class="builder-textarea" id="bf-notes" rows="4" placeholder="Escalation criteria, references…"></textarea>',
+        '</div></div>'
+    ].join('');
+    builderDoc.warnings.forEach(function(w, i) {
+      setVal('wn-' + i, w.text);
+      (function(idx){ bindInput('wn-' + idx, function(v){ builderDoc.warnings[idx].text = v; }); })(i);
+    });
+    setVal('bf-notes', builderDoc.notes);
+    bindInput('bf-notes', function(v){ builderDoc.notes = v; });
+    document.querySelectorAll('[data-warn]').forEach(function(btn) {
+      btn.onclick = function() { deleteWarning(parseInt(this.getAttribute('data-warn'))); };
+    });
+    document.querySelectorAll('[data-wtype]').forEach(function(btn) {
+      btn.onclick = function() { addWarning(this.getAttribute('data-wtype')); };
+    });
     actions.innerHTML = prevBtn + nextBtn;
   }
 
   else if (n === 5) {
-    el.innerHTML =
-      '<div class="builder-section"><div class="builder-section-title">Preview</div>' +
-      '<div class="preview-box" id="sopPreview">'+buildPreviewHTML()+'</div></div>';
-    actions.innerHTML =
-      prevBtn +
-      '<button class="builder-btn builder-btn-secondary" onclick="saveToLibrary()" style="display:flex;align-items:center;gap:6px">' +
-        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>' +
-        'Save to Library</button>' +
-      '<button class="builder-btn builder-btn-primary" onclick="downloadDocx()" style="display:flex;align-items:center;gap:6px">' +
-        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
-        'Download DOCX</button>';
+    el.innerHTML = [
+      '<div class="builder-section"><div class="builder-section-title">Preview</div>',
+      '<div class="preview-box" id="sopPreview">' + buildPreviewHTML() + '</div></div>'
+    ].join('');
+    actions.innerHTML = [
+      prevBtn,
+      '<button class="builder-btn builder-btn-secondary" id="saveLibBtn" style="display:flex;align-items:center;gap:6px">',
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">',
+        '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>',
+        '<polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
+        'Save to Library</button>',
+      '<button class="builder-btn builder-btn-primary" id="dlDocxBtn" style="display:flex;align-items:center;gap:6px">',
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">',
+        '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>',
+        '<polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+        'Download DOCX</button>'
+    ].join('');
+    var slb = document.getElementById('saveLibBtn');
+    var ddb = document.getElementById('dlDocxBtn');
+    if (slb) slb.onclick = saveToLibrary;
+    if (ddb) ddb.onclick = downloadDocx;
   }
+}
+
+// Helper: set input or textarea value safely
+function setVal(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.value = val || '';
+}
+// Helper: bind input/textarea change
+function bindInput(id, fn) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('input', function(){ fn(this.value); });
 }
 
 function buildPreviewHTML() {
