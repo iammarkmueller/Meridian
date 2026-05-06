@@ -610,8 +610,9 @@ function showApp() {
   setInterval(loadDashboard, 30000);
 }
 
-document.getElementById('loginPassword').addEventListener('keydown', function(e){
-  if (e.key === 'Enter') doLogin();
+document.addEventListener('DOMContentLoaded', function() {
+  var lp = document.getElementById('loginPassword');
+  if (lp) lp.addEventListener('keydown', function(e){ if (e.key === 'Enter') doLogin(); });
 });
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
