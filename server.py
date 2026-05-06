@@ -189,6 +189,7 @@ def send_invite_email(to_email, to_name, company_name, manager_name,
         headers={
             "Content-Type":  "application/json",
             "Authorization": "Bearer " + RESEND_KEY,
+            "User-Agent":    "Meridian/1.0 (meridianfi.app)",
         },
         method="POST"
     )
