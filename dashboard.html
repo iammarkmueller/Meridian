@@ -208,8 +208,8 @@ a{color:inherit;text-decoration:none}
 .template-item:hover{border-color:var(--accent);background:rgba(194,160,114,.05)}
 .template-item.active{border-color:var(--accent);background:rgba(194,160,114,.1);color:var(--accent)}
 .builder-main{display:flex;flex-direction:column;gap:0}
-.builder-steps{display:flex;border-bottom:1px solid var(--border);background:var(--surface)}
-.builder-step{padding:12px 20px;font-size:11px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.builder-steps{display:flex;border-bottom:1px solid var(--border);background:var(--surface);overflow:hidden}
+.builder-step{padding:10px 12px;font-size:10.5px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:1;min-width:0}
 .builder-step.active{color:var(--accent);border-bottom-color:var(--accent)}
 .builder-step.done{color:var(--ok)}
 .builder-step-num{width:18px;height:18px;border-radius:50%;background:var(--surface2);font-size:9px;display:grid;place-items:center;flex-shrink:0}
