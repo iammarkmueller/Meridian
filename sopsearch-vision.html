@@ -102,6 +102,37 @@ html,body{height:100%;background:var(--bg);color:var(--text);
 .capture-idle h3{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:8px;color:var(--accent2)}
 .capture-idle p{font-size:12px;color:var(--muted);line-height:1.7}
 .capture-zone.has-image .capture-idle{display:none}
+/* Photo confirm overlay */
+.photo-confirm{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(to top,rgba(5,10,20,.92) 0%,rgba(5,10,20,.6) 70%,transparent 100%);
+  padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;
+  z-index:10;
+}
+.photo-confirm-label{
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(194,160,114,.6);
+}
+.photo-confirm-btns{display:flex;gap:10px;width:100%}
+.btn-looks-great{
+  flex:1;padding:13px;border-radius:10px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent3),var(--accent2));
+  color:#05172f;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:opacity .15s;
+}
+.btn-looks-great:active{opacity:.85}
+.btn-take-another{
+  flex:1;padding:13px;border-radius:10px;
+  border:1px solid rgba(194,160,114,.3);background:rgba(5,10,20,.6);
+  color:var(--accent2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  letter-spacing:.03em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:all .15s;
+}
+.btn-take-another:active{background:rgba(194,160,114,.1)}
+.capture-zone .photo-confirm{display:none}
+.capture-zone.has-image .photo-confirm{display:flex}
+
 .img-info{
   display:none;padding:10px 16px;background:rgba(8,12,16,.85);
   position:absolute;bottom:0;left:0;right:0;
@@ -639,6 +670,20 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
        ondrop="handleDrop(event)">
     <video id="cam" autoplay playsinline></video>
     <img id="preview" src="" alt="">
+    <!-- Photo confirm overlay — shown after capture -->
+    <div class="photo-confirm" id="photoConfirm">
+      <div class="photo-confirm-label">How does it look?</div>
+      <div class="photo-confirm-btns">
+        <button class="btn-take-another" onclick="retakePhoto()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+          Take Another
+        </button>
+        <button class="btn-looks-great" onclick="confirmPhoto()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Looks Great!
+        </button>
+      </div>
+    </div>
     <div class="capture-idle">
       <span class="ci-icon">
   <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="rgba(194,160,114,0.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -946,6 +991,9 @@ function setImage(dataUrl,name,meta){
   document.getElementById('clearPhotoBtn').style.display='flex';
   document.getElementById('results').classList.remove('visible');
   document.getElementById('results').style.display='none';
+  // Show confirm overlay, hide action grid until confirmed
+  document.getElementById('photoConfirm').style.display='flex';
+  document.getElementById('clearGrid').style.display='none';
 }
 
 async function toggleCam(){
@@ -1282,6 +1330,29 @@ function toggleCheckMobile(idx) {
 }
 
 // Camera — fullscreen on mobile
+
+function retakePhoto() {
+  // Clear the current photo and reopen the rear camera
+  capturedImage = null;
+  var zone = document.getElementById('captureZone');
+  var img  = document.getElementById('preview');
+  img.src = ''; img.style.display = 'none';
+  zone.classList.remove('has-image','confirmed');
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('clearPhotoBtn').style.display = 'none';
+  document.getElementById('clearGrid').style.display = 'none';
+  // Reopen rear camera immediately
+  toggleCam();
+}
+
+function confirmPhoto() {
+  // Mark as confirmed — hide the confirm overlay and show the action grid
+  var zone = document.getElementById('captureZone');
+  zone.classList.add('confirmed');
+  document.getElementById('photoConfirm').style.display = 'none';
+  document.getElementById('clearGrid').style.display = 'grid';
+}
+
 function zoneClick() {
   if (capturedImage) return;
   // If camera is already streaming, tap = capture the photo
