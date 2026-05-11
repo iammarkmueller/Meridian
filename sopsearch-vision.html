@@ -951,7 +951,7 @@ function setImage(dataUrl,name,meta){
 async function toggleCam(){
   var btn=document.getElementById('camBtn'),vid=document.getElementById('cam');
   if(camStream){camStream.getTracks().forEach(function(t){t.stop();});camStream=null;vid.style.display='none';btn.textContent='\uD83D\uDCF7 Camera';btn.onclick=toggleCam;return;}
-  try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:'environment'}}});vid.srcObject=camStream;vid.style.display='block';btn.textContent='\uD83D\uDCF8 Capture';btn.onclick=captureFrame;}
+  try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:'environment'}}});vid.srcObject=camStream;vid.style.display='block';if(btn){btn.textContent='\uD83D\uDCF8 Capture';btn.onclick=captureFrame;}}
   catch(e){showToast('Camera unavailable');}
 }
 
@@ -961,8 +961,8 @@ function captureFrame(){
   var d=c.toDataURL('image/jpeg',0.9);
   camStream.getTracks().forEach(function(t){t.stop();}); camStream=null;
   document.getElementById('cam').style.display='none';
-  document.getElementById('camBtn').textContent='\uD83D\uDCF7 Camera';
-  document.getElementById('camBtn').onclick=toggleCam;
+  var _cb=document.getElementById('camBtn');if(_cb)_cb.textContent='\uD83D\uDCF7 Camera';
+  if(_cb)_cb.onclick=toggleCam;
   setImage(d,'camera-capture.jpg',c.width+'x'+c.height);
 }
 
@@ -1291,14 +1291,14 @@ function zoneClick() {
 }
 
 async function toggleCam() {
-  var btn = document.getElementById('camBtn');
+  var btn = document.getElementById('camBtn'); // may be null — handled below
   var vid = document.getElementById('cam');
 
   // Already streaming — stop it
   if (camStream) {
     camStream.getTracks().forEach(function(t){t.stop();}); camStream=null;
     vid.style.display='none';
-    btn.innerHTML='<span class="ab-icon">&#128247;</span>Camera';
+    if(btn) btn.innerHTML='<span class="ab-icon">&#128247;</span>Camera';
     return;
   }
 
@@ -1333,7 +1333,7 @@ async function toggleCam() {
           video: { deviceId: { exact: rearDevice.deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
         });
         vid.srcObject = camStream; vid.style.display = 'block';
-        btn.innerHTML = '<span class="ab-icon">&#128248;</span>Capture';
+        if(btn) btn.innerHTML = '<span class="ab-icon">&#128248;</span>Capture';
         return;
       } catch(e) { lastErr = e; camStream = null; }
     }
@@ -1351,7 +1351,7 @@ async function toggleCam() {
     try {
       camStream = await navigator.mediaDevices.getUserMedia(constraints[ci]);
       vid.srcObject = camStream; vid.style.display = 'block';
-      btn.innerHTML = '<span class="ab-icon">&#128248;</span>Capture';
+      if(btn) btn.innerHTML = '<span class="ab-icon">&#128248;</span>Capture';
       return;
     } catch(e) { lastErr = e; camStream = null; }
   }
@@ -1383,7 +1383,7 @@ function captureFrame() {
   var d=c.toDataURL('image/jpeg',0.9);
   camStream.getTracks().forEach(function(t){t.stop();}); camStream=null;
   vid.style.display='none';
-  document.getElementById('camBtn').innerHTML='<span class="ab-icon">&#128247;</span>Camera';
+  var _cb2=document.getElementById('camBtn');if(_cb2)_cb2.innerHTML='<span class="ab-icon">&#128247;</span>Camera';
   setImage(d,'Camera capture',c.width+'×'+c.height+'px');
 }
 
