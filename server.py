@@ -237,6 +237,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             "/api/sops":               self.handle_get_sops,
             "/api/sops/add":           self.handle_add_sop,
             "/api/sops/delete":        self.handle_delete_sop,
+            "/api/sops/update":        self.handle_update_sop,
             "/api/analyses/save":      self.handle_save_analysis,
             "/api/analyses/mine":      self.handle_my_analyses,
             "/api/analyses/complete":  self.handle_complete_analysis,
@@ -338,6 +339,32 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         print("  ADD SOP status:" + str(status) + " data:" + str(data)[:200])
         self.send_json(200 if status in (200, 201) else 500,
             {"sop": data[0] if isinstance(data, list) else data})
+
+    def handle_update_sop(self):
+        token = self.get_token()
+        body  = self.read_body()
+        if not token:
+            self.send_json(401, {"error": "Not authenticated"}); return
+        auth_user, profile = get_user_from_token(token)
+        if not profile or profile.get("role") not in ("manager", "admin"):
+            self.send_json(403, {"error": "Managers only"}); return
+        sop_id = body.get("id", "")
+        if not sop_id:
+            self.send_json(400, {"error": "id required"}); return
+        import datetime
+        patch = {
+            "name":       body.get("name"),
+            "sop_id":     body.get("sop_id"),
+            "version":    body.get("version"),
+            "category":   body.get("category"),
+            "content":    body.get("content"),
+            "updated_at": datetime.datetime.utcnow().isoformat() + "Z",
+        }
+        patch = {k: v for k, v in patch.items() if v is not None}
+        supabase("PATCH",
+            "/sops?id=eq." + sop_id + "&company_id=eq." + profile["company_id"],
+            patch)
+        self.send_json(200, {"ok": True})
 
     def handle_delete_sop(self):
         token = self.get_token()

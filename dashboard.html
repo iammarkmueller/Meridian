@@ -369,6 +369,38 @@ a{color:inherit;text-decoration:none}
 .aap-send:disabled{opacity:.4;pointer-events:none}
 :root.light .aap-msg.assistant .aap-msg-bubble{background:var(--surface2)}
 
+/* ── SOP EDITOR PANEL ── */
+.sop-card{cursor:pointer;transition:border-color .15s,background .15s}
+.sop-card:hover{border-color:var(--accent);background:rgba(194,160,114,.03)}
+.sop-edit-overlay{position:fixed;inset:0;background:rgba(5,10,20,.7);backdrop-filter:blur(3px);z-index:100;opacity:0;pointer-events:none;transition:opacity .25s}
+.sop-edit-overlay.open{opacity:1;pointer-events:all}
+.sop-edit-panel{position:fixed;top:0;right:0;width:600px;max-width:100vw;height:100vh;background:var(--surface);border-left:1px solid var(--border2);z-index:101;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.sop-edit-panel.open{transform:translateX(0)}
+.sep-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0}
+.sep-title{font-family:"Playfair Display",serif;font-size:17px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sep-close{width:32px;height:32px;border-radius:8px;background:rgba(232,223,200,.06);border:1px solid var(--border);color:var(--muted);cursor:pointer;display:grid;place-items:center;flex-shrink:0;transition:all .15s}
+.sep-close:hover{background:rgba(200,124,80,.1);border-color:var(--warn);color:var(--warn)}
+.sep-meta-row{padding:12px 24px;border-bottom:1px solid var(--border);display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap}
+.sep-meta-field{display:flex;flex-direction:column;gap:3px;min-width:120px;flex:1}
+.sep-meta-label{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.sep-meta-input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px;font-family:"DM Sans",sans-serif;transition:border-color .15s}
+.sep-meta-input:focus{outline:none;border-color:var(--accent)}
+.sep-cat-row{display:flex;gap:6px}
+.sep-cat-btn{font-size:10px;padding:4px 10px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;font-family:"DM Sans",sans-serif}
+.sep-cat-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(194,160,114,.1)}
+.sep-content-area{flex:1;display:flex;flex-direction:column;padding:16px 24px;gap:8px;overflow:hidden}
+.sep-content-label{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.sep-content-textarea{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;color:var(--text);font-size:12px;font-family:"DM Mono",monospace;line-height:1.7;resize:none;transition:border-color .15s}
+.sep-content-textarea:focus{outline:none;border-color:var(--accent)}
+.sep-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0}
+.sep-btn{flex:1;padding:11px;border-radius:8px;border:none;cursor:pointer;font-family:"DM Sans",sans-serif;font-size:12px;font-weight:600;transition:all .15s;letter-spacing:.03em}
+.sep-btn-primary{background:linear-gradient(135deg,var(--accent3),var(--accent2));color:#0a0d15}
+.sep-btn-primary:hover{opacity:.9}
+.sep-btn-secondary{background:rgba(232,223,200,.06);border:1px solid var(--border);color:var(--muted)}
+.sep-btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.sep-btn-danger{background:rgba(200,124,80,.08);border:1px solid rgba(200,124,80,.25);color:var(--warn)}
+.sep-btn-danger:hover{background:rgba(200,124,80,.18)}
+
 /* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:10px 20px;font-size:12px;border-radius:20px;transition:transform .25s;z-index:200;white-space:nowrap;opacity:0}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
@@ -685,6 +717,45 @@ a{color:inherit;text-decoration:none}
 </div><!-- /appScreen -->
 
 <div class="toast" id="toast"></div>
+
+<!-- SOP EDITOR OVERLAY + PANEL -->
+<div class="sop-edit-overlay" id="sopEditOverlay" onclick="closeSopEditor()"></div>
+<div class="sop-edit-panel" id="sopEditPanel">
+  <div class="sep-header">
+    <span class="sep-title" id="sepTitle">SOP</span>
+    <button class="sep-close" onclick="closeSopEditor()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="sep-meta-row">
+    <div class="sep-meta-field">
+      <div class="sep-meta-label">Document ID</div>
+      <input class="sep-meta-input" id="sepSopId" placeholder="SOP-MAINT-001">
+    </div>
+    <div class="sep-meta-field">
+      <div class="sep-meta-label">Version</div>
+      <input class="sep-meta-input" id="sepVersion" placeholder="1.0" style="max-width:80px">
+    </div>
+    <div class="sep-meta-field" style="flex:2">
+      <div class="sep-meta-label">Category</div>
+      <div class="sep-cat-row">
+        <button class="sep-cat-btn" data-cat="maint" onclick="setSepCat('maint',this)">Maintenance</button>
+        <button class="sep-cat-btn" data-cat="safety" onclick="setSepCat('safety',this)">Safety</button>
+        <button class="sep-cat-btn" data-cat="ops" onclick="setSepCat('ops',this)">Operations</button>
+        <button class="sep-cat-btn" data-cat="quality" onclick="setSepCat('quality',this)">Quality</button>
+      </div>
+    </div>
+  </div>
+  <div class="sep-content-area">
+    <div class="sep-content-label">Full Content</div>
+    <textarea class="sep-content-textarea" id="sepContent" placeholder="SOP content…"></textarea>
+  </div>
+  <div class="sep-footer">
+    <button class="sep-btn sep-btn-danger" id="sepDeleteBtn" onclick="deleteSopFromEditor()">Delete</button>
+    <button class="sep-btn sep-btn-secondary" onclick="closeSopEditor()">Cancel</button>
+    <button class="sep-btn sep-btn-primary" onclick="saveSopEdits()">Save Changes</button>
+  </div>
+</div>
 
 <!-- DETAIL OVERLAY + PANEL -->
 <div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
@@ -1948,6 +2019,83 @@ function applyAssistSuggestion(data) {
   }
   showToast('✓ Applied to document');
 }
+
+
+// ── SOP EDITOR ────────────────────────────────────────────────────────────────
+var currentSop = null;
+
+function openSopEditor(sop) {
+  currentSop = sop;
+  document.getElementById('sepTitle').textContent   = sop.name || 'SOP';
+  document.getElementById('sepSopId').value         = sop.sop_id || '';
+  document.getElementById('sepVersion').value       = sop.version || '';
+  document.getElementById('sepContent').value       = sop.content || '';
+  // Set category buttons
+  document.querySelectorAll('.sep-cat-btn').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-cat') === (sop.category || 'ops'));
+  });
+  document.getElementById('sopEditOverlay').classList.add('open');
+  document.getElementById('sopEditPanel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSopEditor() {
+  document.getElementById('sopEditOverlay').classList.remove('open');
+  document.getElementById('sopEditPanel').classList.remove('open');
+  document.body.style.overflow = '';
+  currentSop = null;
+}
+
+function setSepCat(cat, btn) {
+  document.querySelectorAll('.sep-cat-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+function saveSopEdits() {
+  if (!currentSop) return;
+  var activeCat = document.querySelector('.sep-cat-btn.active');
+  var payload = {
+    id:       currentSop.id,
+    name:     document.getElementById('sepTitle').textContent.trim(),
+    sop_id:   document.getElementById('sepSopId').value.trim(),
+    version:  document.getElementById('sepVersion').value.trim(),
+    category: activeCat ? activeCat.getAttribute('data-cat') : (currentSop.category || 'ops'),
+    content:  document.getElementById('sepContent').value,
+  };
+  fetch('/api/sops/update', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
+    body: JSON.stringify(payload)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if (data.error) { showToast('Error saving: ' + JSON.stringify(data.error)); return; }
+    showToast('SOP saved');
+    closeSopEditor();
+    loadSops();
+  })
+  .catch(function(){ showToast('Error saving SOP'); });
+}
+
+function deleteSopFromEditor() {
+  if (!currentSop) return;
+  if (!confirm('Delete this SOP? This cannot be undone.')) return;
+  fetch('/api/sops/delete', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+session.token},
+    body: JSON.stringify({id: currentSop.id})
+  })
+  .then(function(){
+    showToast('SOP deleted');
+    closeSopEditor();
+    loadSops();
+  })
+  .catch(function(){ showToast('Error deleting SOP'); });
+}
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape' && currentSop) closeSopEditor();
+});
 
 // ── THEME ─────────────────────────────────────────────────────────────────────
 function toggleTheme() {
