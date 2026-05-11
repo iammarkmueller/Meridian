@@ -967,6 +967,9 @@ function clearPhoto(){
   document.getElementById('imgSize').textContent='-';
   document.getElementById('analyzeBtn').disabled=true;
   document.getElementById('clearPhotoBtn').style.display='none';
+  document.getElementById('photoConfirm').style.display='none';
+  document.getElementById('actionGrid').style.display='grid';
+  document.getElementById('clearGrid').style.display='none';
   document.getElementById('results').classList.remove('visible');
   document.getElementById('results').style.display='none';
   renderSopBar();
@@ -1341,15 +1344,18 @@ function retakePhoto() {
   document.getElementById('analyzeBtn').disabled = true;
   document.getElementById('clearPhotoBtn').style.display = 'none';
   document.getElementById('clearGrid').style.display = 'none';
+  document.getElementById('photoConfirm').style.display = 'none';
+  document.getElementById('actionGrid').style.display = 'grid';
   // Reopen rear camera immediately
   toggleCam();
 }
 
 function confirmPhoto() {
-  // Mark as confirmed — hide the confirm overlay and show the action grid
+  // Hide confirm overlay, hide first action grid, show the post-confirm grid
   var zone = document.getElementById('captureZone');
   zone.classList.add('confirmed');
   document.getElementById('photoConfirm').style.display = 'none';
+  document.getElementById('actionGrid').style.display = 'none';
   document.getElementById('clearGrid').style.display = 'grid';
 }
 
