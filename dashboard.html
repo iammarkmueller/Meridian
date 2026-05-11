@@ -200,7 +200,9 @@ a{color:inherit;text-decoration:none}
 .trade-btn{padding:10px 8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;transition:all .15s;text-align:center;font-family:"DM Sans",sans-serif}
 .trade-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(194,160,114,.05)}
 .trade-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(194,160,114,.1);font-weight:600}
-.trade-btn .trade-icon{font-size:18px;display:block;margin-bottom:4px}
+.trade-btn .trade-icon{display:flex;justify-content:center;align-items:center;margin-bottom:6px;opacity:.7}
+.trade-btn.active .trade-icon{opacity:1}
+.trade-btn:hover .trade-icon{opacity:1}
 .template-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto}
 .template-item{padding:9px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:11px;cursor:pointer;transition:all .15s;text-align:left;font-family:"DM Sans",sans-serif;line-height:1.4}
 .template-item:hover{border-color:var(--accent);background:rgba(194,160,114,.05)}
@@ -456,11 +458,11 @@ a{color:inherit;text-decoration:none}
             </div>
             <div class="builder-panel-body">
               <div class="trade-grid" id="tradeGrid">
-                <button class="trade-btn active" onclick="selectTrade('masonry',this)"><span class="trade-icon">🧱</span>Concrete &amp; Masonry</button>
-                <button class="trade-btn" onclick="selectTrade('plumbing',this)"><span class="trade-icon">🔧</span>Plumbing</button>
-                <button class="trade-btn" onclick="selectTrade('electrical',this)"><span class="trade-icon">⚡</span>Electrical</button>
-                <button class="trade-btn" onclick="selectTrade('hvac',this)"><span class="trade-icon">❄️</span>HVAC</button>
-                <button class="trade-btn" onclick="selectTrade('roofing',this)" style="grid-column:1/-1"><span class="trade-icon">🏠</span>Roofing</button>
+                <button class="trade-btn active" onclick="selectTrade('masonry',this)"><span class="trade-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="4" rx="1"/><rect x="2" y="10" width="9" height="4" rx="1"/><rect x="13" y="10" width="9" height="4" rx="1"/><rect x="2" y="16" width="20" height="4" rx="1"/></svg></span>Concrete &amp; Masonry</button>
+                <button class="trade-btn" onclick="selectTrade('plumbing',this)"><span class="trade-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h8a2 2 0 0 1 2 2v8"/><path d="M14 18h4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="18" r="2"/></svg></span>Plumbing</button>
+                <button class="trade-btn" onclick="selectTrade('electrical',this)"><span class="trade-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>Electrical</button>
+                <button class="trade-btn" onclick="selectTrade('hvac',this)"><span class="trade-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2a5 5 0 0 1 5 5c0 1.5-.5 2.9-1.4 4"/><path d="M22 12a5 5 0 0 1-5 5c-1.5 0-2.9-.5-4-1.4"/><path d="M12 22a5 5 0 0 1-5-5c0-1.5.5-2.9 1.4-4"/><path d="M2 12a5 5 0 0 1 5-5c1.5 0 2.9.5 4 1.4"/></svg></span>HVAC</button>
+                <button class="trade-btn" onclick="selectTrade('roofing',this)" style="grid-column:1/-1"><span class="trade-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L12 3l9 9"/><path d="M9 21V12h6v9"/><path d="M3 12v9h18V12"/></svg></span>Roofing</button>
               </div>
             </div>
           </div>
