@@ -265,6 +265,103 @@ a{color:inherit;text-decoration:none}
 :root.light .ai-draft-area{background:var(--surface2)}
 :root.light .preview-box{background:var(--surface2)}
 
+/* ── AI ASSISTANT PANEL ── */
+.ai-assist-toggle{
+  position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:28px;height:64px;background:rgba(122,171,110,.12);
+  border:1px solid rgba(122,171,110,.25);border-right:none;
+  border-radius:8px 0 0 8px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;z-index:10;transition:all .2s;
+  color:var(--ok);writing-mode:vertical-rl;font-size:9px;
+  letter-spacing:.1em;text-transform:uppercase;gap:0;
+}
+.ai-assist-toggle:hover{background:rgba(122,171,110,.2);width:32px}
+.ai-assist-toggle.open{background:rgba(122,171,110,.15)}
+.builder-with-assist{position:relative;display:flex;flex:1;min-height:0;overflow:hidden}
+.builder-right{display:flex;flex-direction:column;flex:1;min-width:0;transition:margin-right .3s}
+.builder-right.assist-open{margin-right:300px}
+.ai-assist-panel{
+  position:absolute;right:0;top:0;bottom:0;width:300px;
+  background:var(--surface);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;transform:translateX(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:9;
+}
+.ai-assist-panel.open{transform:translateX(0)}
+.aap-header{
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.aap-header-icon{
+  width:28px;height:28px;border-radius:7px;
+  background:rgba(122,171,110,.12);border:1px solid rgba(122,171,110,.25);
+  display:grid;place-items:center;flex-shrink:0;color:var(--ok);
+}
+.aap-title{font-family:"Playfair Display",serif;font-size:13px;font-weight:700;flex:1}
+.aap-close{width:24px;height:24px;border-radius:5px;background:transparent;
+  border:1px solid var(--border);color:var(--muted);cursor:pointer;
+  display:grid;place-items:center;transition:all .15s}
+.aap-close:hover{border-color:var(--warn);color:var(--warn)}
+.aap-context{
+  padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);
+  font-size:10px;color:var(--muted);line-height:1.5;flex-shrink:0;
+}
+.aap-context strong{color:var(--accent);display:block;margin-bottom:3px;font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.aap-suggestions{flex-shrink:0;padding:10px 12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:5px}
+.aap-sugg-label{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:rgba(122,171,110,.5);margin-bottom:2px}
+.aap-sugg{
+  padding:7px 10px;border-radius:6px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:10px;
+  cursor:pointer;text-align:left;transition:all .15s;font-family:"DM Sans",sans-serif;
+  line-height:1.4;
+}
+.aap-sugg:hover{border-color:rgba(122,171,110,.4);color:var(--ok);background:rgba(122,171,110,.05)}
+.aap-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.aap-msg{display:flex;gap:8px;align-items:flex-start}
+.aap-msg.user{flex-direction:row-reverse}
+.aap-msg-avatar{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  display:grid;place-items:center;font-size:9px;font-weight:700;margin-top:1px;
+}
+.aap-msg.assistant .aap-msg-avatar{background:rgba(122,171,110,.15);color:var(--ok)}
+.aap-msg.user .aap-msg-avatar{background:rgba(194,160,114,.15);color:var(--accent)}
+.aap-msg-bubble{
+  max-width:220px;padding:9px 11px;border-radius:10px;font-size:11px;line-height:1.6;
+}
+.aap-msg.assistant .aap-msg-bubble{background:var(--surface2);border:1px solid var(--border);color:var(--text)}
+.aap-msg.user .aap-msg-bubble{background:rgba(194,160,114,.1);border:1px solid rgba(194,160,114,.2);color:var(--text)}
+.aap-msg-apply{
+  margin-top:6px;padding:5px 9px;border-radius:5px;border:1px solid rgba(122,171,110,.3);
+  background:rgba(122,171,110,.08);color:var(--ok);font-size:10px;cursor:pointer;
+  font-family:"DM Sans",sans-serif;transition:all .15s;display:inline-block;
+}
+.aap-msg-apply:hover{background:rgba(122,171,110,.15)}
+.aap-typing{display:flex;gap:4px;align-items:center;padding:4px 0}
+.aap-typing span{
+  width:5px;height:5px;border-radius:50%;background:var(--ok);opacity:.4;
+  animation:aap-bounce .9s infinite;
+}
+.aap-typing span:nth-child(2){animation-delay:.15s}
+.aap-typing span:nth-child(3){animation-delay:.3s}
+@keyframes aap-bounce{0%,60%,100%{opacity:.4;transform:none}30%{opacity:1;transform:translateY(-3px)}}
+.aap-input-row{
+  padding:10px 12px;border-top:1px solid var(--border);
+  display:flex;gap:7px;flex-shrink:0;
+}
+.aap-input{
+  flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;
+  padding:8px 10px;color:var(--text);font-size:11px;font-family:"DM Sans",sans-serif;
+  resize:none;min-height:36px;max-height:80px;transition:border-color .15s;
+}
+.aap-input:focus{outline:none;border-color:rgba(122,171,110,.5)}
+.aap-send{
+  width:32px;height:36px;border-radius:7px;background:rgba(122,171,110,.12);
+  border:1px solid rgba(122,171,110,.25);color:var(--ok);cursor:pointer;
+  display:grid;place-items:center;flex-shrink:0;transition:all .15s;
+}
+.aap-send:hover{background:rgba(122,171,110,.22)}
+.aap-send:disabled{opacity:.4;pointer-events:none}
+:root.light .aap-msg.assistant .aap-msg-bubble{background:var(--surface2)}
+
 /* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:10px 20px;font-size:12px;border-radius:20px;transition:transform .25s;z-index:200;white-space:nowrap;opacity:0}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
@@ -495,7 +592,9 @@ a{color:inherit;text-decoration:none}
         </div>
 
         <!-- Right: builder form -->
-        <div class="builder-panel" style="display:flex;flex-direction:column;min-height:0">
+        <div class="builder-panel" style="display:flex;flex-direction:column;min-height:0;overflow:hidden">
+          <div class="builder-with-assist" id="builderWithAssist">
+          <div class="builder-right" id="builderRight">
           <div class="builder-steps" id="builderSteps">
             <div class="builder-step active" data-step="1" onclick="goToStep(1)"><div class="builder-step-num">1</div>Details</div>
             <div class="builder-step" data-step="2" onclick="goToStep(2)"><div class="builder-step-num">2</div>Safety &amp; PPE</div>
@@ -509,6 +608,36 @@ a{color:inherit;text-decoration:none}
           </div>
 
           <div class="builder-actions" id="builderActions"></div>
+          </div><!-- /builder-right -->
+
+          <!-- AI Assistant toggle tab -->
+          <button class="ai-assist-toggle" id="assistToggle" onclick="toggleAssist()" title="AI Writing Assistant">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </button>
+
+          <!-- AI Assistant panel -->
+          <div class="ai-assist-panel" id="assistPanel">
+            <div class="aap-header">
+              <div class="aap-header-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div class="aap-title">AI Writing Assistant</div>
+              <button class="aap-close" onclick="toggleAssist()">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div class="aap-context" id="aapContext"></div>
+            <div class="aap-suggestions" id="aapSuggestions"></div>
+            <div class="aap-messages" id="aapMessages"></div>
+            <div class="aap-input-row">
+              <textarea class="aap-input" id="aapInput" placeholder="Ask anything about this section…" rows="1"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAssistMessage()}"></textarea>
+              <button class="aap-send" id="aapSend" onclick="sendAssistMessage()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+          </div><!-- /builder-with-assist -->
         </div>
       </div>
     </div>
@@ -1162,6 +1291,7 @@ function goToStep(n) {
     else if (sn < n) s.classList.add('done');
   });
   renderStep(n);
+  if (assistOpen) updateAssistContext(n);
 }
 
 function renderStep(n) {
@@ -1568,6 +1698,237 @@ async function runAiDraft() {
 function initBuilder() {
   renderTemplates('masonry');
   renderStep(1);
+}
+
+
+// ── AI WRITING ASSISTANT ──────────────────────────────────────────────────────
+
+var assistOpen = false;
+var assistMessages = []; // conversation history for context
+
+var STEP_CONTEXT = {
+  1: {
+    label: 'Step 1 — Details',
+    hint: 'I can help you write a clear purpose statement, define scope boundaries, generate a document ID, or suggest an effective date.',
+    suggestions: [
+      'Suggest a purpose statement based on the title',
+      'Help me define the scope clearly',
+      'What should I include in the scope?',
+      'Generate a professional document ID',
+    ]
+  },
+  2: {
+    label: 'Step 2 — Safety & PPE',
+    hint: 'I can recommend PPE for this trade and task, write environmental condition requirements, or flag any safety considerations you may have missed.',
+    suggestions: [
+      'What PPE is required for this task?',
+      "Are there any PPE items I'm missing?",
+      'Write environmental conditions for this task',
+      'What temperature or weather restrictions apply?',
+    ]
+  },
+  3: {
+    label: 'Step 3 — Procedure',
+    hint: 'I can help you write detailed step instructions, suggest missing steps, improve clarity, or add safety checkpoints between steps.',
+    suggestions: [
+      "Review my steps and suggest what's missing",
+      "Make step " + (builderDoc.steps.length) + " more detailed",
+      'Add a quality check step at the end',
+      'Rewrite a step in simpler language for field workers',
+    ]
+  },
+  4: {
+    label: 'Step 4 — Warnings & Notes',
+    hint: 'I can suggest critical warnings, regulatory notes, escalation criteria, or common failure points for this type of task.',
+    suggestions: [
+      'What are the most critical warnings for this task?',
+      'Suggest escalation criteria',
+      'What regulatory requirements apply?',
+      'What are common failure points to warn about?',
+    ]
+  },
+  5: {
+    label: 'Step 5 — Preview & Export',
+    hint: 'I can review the full SOP for completeness, suggest improvements, check for missing sections, or help you finalize the document.',
+    suggestions: [
+      'Review the full SOP for completeness',
+      'Is anything missing from this document?',
+      'Suggest improvements to make this more professional',
+      'Check if this meets industry standards',
+    ]
+  },
+};
+
+function toggleAssist() {
+  assistOpen = !assistOpen;
+  var panel   = document.getElementById('assistPanel');
+  var toggle  = document.getElementById('assistToggle');
+  var right   = document.getElementById('builderRight');
+  panel.classList.toggle('open', assistOpen);
+  toggle.classList.toggle('open', assistOpen);
+  if (right) right.classList.toggle('assist-open', assistOpen);
+  if (assistOpen) {
+    updateAssistContext(builderDoc.currentStep);
+    if (assistMessages.length === 0) addAssistMessage('assistant',
+      "Hi! I'm your AI writing assistant. I'm here to help you build a professional, safety-focused SOP." +
+      'Use the quick prompts above or ask me anything about this section.'
+    );
+    setTimeout(function(){ document.getElementById('aapInput').focus(); }, 350);
+  }
+}
+
+function updateAssistContext(step) {
+  var ctx = STEP_CONTEXT[step] || STEP_CONTEXT[1];
+
+  // Update context header
+  var ctxEl = document.getElementById('aapContext');
+  if (ctxEl) {
+    ctxEl.innerHTML = '<strong>Current Section</strong>' + ctx.label + '<br>' + ctx.hint;
+  }
+
+  // Update suggestion chips
+  var suggEl = document.getElementById('aapSuggestions');
+  if (suggEl) {
+    // Rebuild suggestions for the current step
+    var stepCtx = STEP_CONTEXT[step] || STEP_CONTEXT[1];
+    suggEl.innerHTML = '<div class="aap-sugg-label">Quick prompts</div>';
+    stepCtx.suggestions.forEach(function(s) {
+      var btn = document.createElement('button');
+      btn.className = 'aap-sugg';
+      btn.textContent = s;
+      btn.onclick = function() { sendAssistMessage(s); };
+      suggEl.appendChild(btn);
+    });
+  }
+}
+
+function addAssistMessage(role, text, applyData) {
+  assistMessages.push({role: role === 'assistant' ? 'assistant' : 'user', content: text});
+  var msgs = document.getElementById('aapMessages');
+  if (!msgs) return;
+  var div = document.createElement('div');
+  div.className = 'aap-msg ' + (role === 'assistant' ? 'assistant' : 'user');
+  var avatar = document.createElement('div');
+  avatar.className = 'aap-msg-avatar';
+  avatar.textContent = role === 'assistant' ? '✦' : 'You';
+  var bubble = document.createElement('div');
+  bubble.className = 'aap-msg-bubble';
+  bubble.textContent = text;
+  if (applyData) {
+    var applyBtn = document.createElement('button');
+    applyBtn.className = 'aap-msg-apply';
+    applyBtn.textContent = '↙ Apply to document';
+    applyBtn.onclick = function() { applyAssistSuggestion(applyData); applyBtn.textContent = '✓ Applied'; applyBtn.disabled = true; };
+    bubble.appendChild(document.createElement('br'));
+    bubble.appendChild(applyBtn);
+  }
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showAssistTyping() {
+  var msgs = document.getElementById('aapMessages');
+  if (!msgs) return null;
+  var div = document.createElement('div');
+  div.className = 'aap-msg assistant';
+  div.id = 'aapTyping';
+  var avatar = document.createElement('div');
+  avatar.className = 'aap-msg-avatar';
+  avatar.textContent = '✦';
+  var bubble = document.createElement('div');
+  bubble.className = 'aap-msg-bubble';
+  bubble.innerHTML = '<div class="aap-typing"><span></span><span></span><span></span></div>';
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+async function sendAssistMessage(overrideText) {
+  var input = document.getElementById('aapInput');
+  var text = (overrideText || (input ? input.value.trim() : '')).trim();
+  if (!text) return;
+  if (input && !overrideText) input.value = '';
+
+  addAssistMessage('user', text);
+  var typingEl = showAssistTyping();
+  var sendBtn = document.getElementById('aapSend');
+  if (sendBtn) sendBtn.disabled = true;
+
+  // Build context about the current document state
+  var step = builderDoc.currentStep;
+  var docSummary = 'SOP Title: "' + (builderDoc.title || 'untitled') + '". ' +
+    'Trade: ' + builderDoc.trade + '. ' +
+    'Purpose: ' + (builderDoc.purpose ? builderDoc.purpose.substring(0,100) : 'not yet written') + '. ' +
+    'Steps so far: ' + builderDoc.steps.length + '. ' +
+    'PPE selected: ' + (builderDoc.ppe.join(', ') || 'none selected') + '.';
+
+  var systemPrompt = 'You are an expert SOP (Standard Operating Procedure) writing assistant for the trades industry. ' +
+    'You help maintenance technicians and managers write professional, safety-focused SOPs. ' +
+    'Current document context: ' + docSummary + ' ' +
+    'Current step being edited: ' + (STEP_CONTEXT[step] ? STEP_CONTEXT[step].label : 'unknown') + '. ' +
+    'Be concise and practical. When providing text the user can insert into the document, ' +
+    'clearly present it so they can copy or apply it. Use plain language appropriate for field staff. ' +
+    'If you suggest specific text to add, put it in quotes or clearly mark it as suggested text.';
+
+  // Build conversation history for context (last 6 messages)
+  var history = assistMessages.slice(-6).map(function(m) {
+    return {role: m.role, content: m.content};
+  });
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 500,
+        system: systemPrompt,
+        messages: history
+      })
+    });
+    var data = await response.json();
+    var reply = data.content && data.content[0] ? data.content[0].text : 'Sorry, I could not generate a response.';
+
+    if (typingEl) typingEl.remove();
+
+    // Check if the reply contains suggested text that can be applied
+    var applyData = null;
+    if (step === 1 && (text.toLowerCase().includes('purpose') || text.toLowerCase().includes('scope'))) {
+      applyData = {type: text.toLowerCase().includes('purpose') ? 'purpose' : 'scope', text: reply};
+    } else if (step === 2 && text.toLowerCase().includes('environmental')) {
+      applyData = {type: 'envConditions', text: reply};
+    }
+
+    addAssistMessage('assistant', reply, applyData);
+  } catch(err) {
+    if (typingEl) typingEl.remove();
+    addAssistMessage('assistant', 'I ran into an error — check your connection and try again.');
+    console.error(err);
+  } finally {
+    if (sendBtn) sendBtn.disabled = false;
+    if (input) input.focus();
+  }
+}
+
+function applyAssistSuggestion(data) {
+  if (data.type === 'purpose') {
+    builderDoc.purpose = data.text;
+    var el = document.getElementById('bf-purpose');
+    if (el) el.value = data.text;
+  } else if (data.type === 'scope') {
+    builderDoc.scope = data.text;
+    var el = document.getElementById('bf-scope');
+    if (el) el.value = data.text;
+  } else if (data.type === 'envConditions') {
+    builderDoc.envConditions = data.text;
+    var el = document.getElementById('bf-envCond');
+    if (el) el.value = data.text;
+  }
+  showToast('✓ Applied to document');
 }
 
 // ── THEME ─────────────────────────────────────────────────────────────────────
