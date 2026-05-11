@@ -951,7 +951,7 @@ function setImage(dataUrl,name,meta){
 async function toggleCam(){
   var btn=document.getElementById('camBtn'),vid=document.getElementById('cam');
   if(camStream){camStream.getTracks().forEach(function(t){t.stop();});camStream=null;vid.style.display='none';btn.textContent='\uD83D\uDCF7 Camera';btn.onclick=toggleCam;return;}
-  try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});vid.srcObject=camStream;vid.style.display='block';btn.textContent='\uD83D\uDCF8 Capture';btn.onclick=captureFrame;}
+  try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:'environment'}}});vid.srcObject=camStream;vid.style.display='block';btn.textContent='\uD83D\uDCF8 Capture';btn.onclick=captureFrame;}
   catch(e){showToast('Camera unavailable');}
 }
 
@@ -1284,7 +1284,9 @@ function toggleCheckMobile(idx) {
 // Camera — fullscreen on mobile
 function zoneClick() {
   if (capturedImage) return;
-  // Tap on zone goes straight to camera
+  // On iOS, enumerateDevices only returns labels after permission is granted.
+  // Request a basic stream first to trigger permission prompt, then restart
+  // with the proper rear camera constraint.
   toggleCam();
 }
 
@@ -1306,36 +1308,63 @@ async function toggleCam() {
     return;
   }
 
-  // Try rear camera first, fall back to any camera
+  var lastErr = null;
+
+  // Step 1: Try to find the rear camera by enumerating devices (most reliable on iOS)
+  try {
+    var devices = await navigator.mediaDevices.enumerateDevices();
+    var videoDevices = devices.filter(function(d){ return d.kind === 'videoinput'; });
+    // On iOS the rear camera is typically the LAST video device in the list
+    // Look for one labelled 'back' or take the last one
+    var rearDevice = null;
+    for (var i = videoDevices.length - 1; i >= 0; i--) {
+      var label = videoDevices[i].label.toLowerCase();
+      if (label.indexOf('back') > -1 || label.indexOf('rear') > -1 || label.indexOf('environment') > -1) {
+        rearDevice = videoDevices[i];
+        break;
+      }
+    }
+    // If no labelled rear camera found, take the last device (rear on most phones)
+    if (!rearDevice && videoDevices.length > 1) rearDevice = videoDevices[videoDevices.length - 1];
+
+    if (rearDevice && rearDevice.deviceId) {
+      try {
+        camStream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { exact: rearDevice.deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+        });
+        vid.srcObject = camStream; vid.style.display = 'block';
+        btn.innerHTML = '<span class="ab-icon">&#128248;</span>Capture';
+        return;
+      } catch(e) { lastErr = e; camStream = null; }
+    }
+  } catch(e) { /* enumerateDevices failed, fall through */ }
+
+  // Step 2: facingMode constraints — try progressively looser constraints
   var constraints = [
-    {video:{facingMode:{exact:'environment'}}},
+    {video:{facingMode:{exact:'environment'}, width:{ideal:1920}, height:{ideal:1080}}},
+    {video:{facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720}}},
     {video:{facingMode:'environment'}},
     {video:true}
   ];
 
-  var lastErr = null;
   for (var ci = 0; ci < constraints.length; ci++) {
     try {
       camStream = await navigator.mediaDevices.getUserMedia(constraints[ci]);
-      vid.srcObject = camStream;
-      vid.style.display = 'block';
+      vid.srcObject = camStream; vid.style.display = 'block';
       btn.innerHTML = '<span class="ab-icon">&#128248;</span>Capture';
-      return; // success
-    } catch(e) {
-      lastErr = e;
-      camStream = null;
-    }
+      return;
+    } catch(e) { lastErr = e; camStream = null; }
   }
 
-  // All attempts failed — give a specific message
+  // All attempts failed
   var msg = 'Camera unavailable';
   if (lastErr) {
     if (lastErr.name === 'NotAllowedError' || lastErr.name === 'PermissionDeniedError') {
-      msg = 'Camera permission denied — allow in browser settings';
+      msg = 'Camera permission denied — allow in Settings > Safari > Camera';
     } else if (lastErr.name === 'NotFoundError' || lastErr.name === 'DevicesNotFoundError') {
       msg = 'No camera found on this device';
     } else if (lastErr.name === 'NotReadableError' || lastErr.name === 'TrackStartError') {
-      msg = 'Camera in use by another app';
+      msg = 'Camera in use by another app — close other apps and try again';
     } else if (lastErr.name === 'OverconstrainedError') {
       msg = 'Camera constraint failed — try Upload';
     } else {
