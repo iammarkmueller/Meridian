@@ -1284,9 +1284,12 @@ function toggleCheckMobile(idx) {
 // Camera — fullscreen on mobile
 function zoneClick() {
   if (capturedImage) return;
-  // On iOS, enumerateDevices only returns labels after permission is granted.
-  // Request a basic stream first to trigger permission prompt, then restart
-  // with the proper rear camera constraint.
+  // If camera is already streaming, tap = capture the photo
+  if (camStream) {
+    captureFrame();
+    return;
+  }
+  // Otherwise open the camera
   toggleCam();
 }
 
