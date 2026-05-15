@@ -704,7 +704,7 @@ video#cam{width:100%;max-height:420px;object-fit:cover;display:none}
   <!-- Describe panel — text only query -->
   <div class="describe-panel" id="describePanel">
     <div class="describe-head">Describe the issue</div>
-    <textarea class="describe-textarea" id="describeText"
+    <textarea class="describe-textarea" id="describeText" oninput="updateAnalyzeBtn()"
       placeholder="e.g. There is a crack running across the concrete floor near the entrance. It appears to be about 1/4 inch wide..."></textarea>
     <div class="describe-footer">
       <span class="describe-hint">No photo needed — AI will search your SOPs</span>
@@ -1357,6 +1357,47 @@ function confirmPhoto() {
   document.getElementById('photoConfirm').style.display = 'none';
   document.getElementById('actionGrid').style.display = 'none';
   document.getElementById('clearGrid').style.display = 'grid';
+}
+
+
+
+function clearDescribe() {
+  var dt = document.getElementById('describeText');
+  if (dt) dt.value = '';
+  updateAnalyzeBtn();
+}
+
+function updateAnalyzeBtn() {
+  var btn         = document.getElementById('analyzeBtn');
+  var describeText = document.getElementById('describeText');
+  var hasImage    = !!capturedImage;
+  var hasDesc     = describeText && describeText.value.trim().length > 0;
+  if (btn) btn.disabled = !(hasImage || hasDesc);
+}
+
+function toggleDescribe() {
+  var panel = document.getElementById('describePanel');
+  var btn   = document.getElementById('describeBtn');
+  if (!panel) return;
+  var isOpen = panel.classList.toggle('open');
+  if (btn) btn.classList.toggle('active', isOpen);
+  if (isOpen) {
+    var dt = document.getElementById('describeText');
+    if (dt) setTimeout(function(){ dt.focus(); }, 100);
+  }
+  updateAnalyzeBtn();
+}
+
+function toggleContext() {
+  var panel = document.getElementById('contextPanel');
+  var btn   = document.getElementById('contextBtn');
+  if (!panel) return;
+  var isOpen = panel.classList.toggle('open');
+  if (btn) btn.classList.toggle('active', isOpen);
+  if (isOpen) {
+    var ct = document.getElementById('contextText');
+    if (ct) setTimeout(function(){ ct.focus(); }, 100);
+  }
 }
 
 function zoneClick() {
